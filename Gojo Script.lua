@@ -32,7 +32,7 @@ local function findGuiAndSetText()
         if magicHealthFrame then
             local textLabel = magicHealthFrame:FindFirstChild("TextLabel")
             if textLabel then
-                textLabel.Text = "Lets Get A Little Crazy!"
+                textLabel.Text = "BU ULTI SAKIN BASMA AMK"
             end
         end
     end
