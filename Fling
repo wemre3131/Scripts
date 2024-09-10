@@ -1,2 +1,1 @@
--
-print" kullanmiyacaktin amk"
+print("Kullanma hileyi görüyorsan malsin")
