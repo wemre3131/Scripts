@@ -1,83 +1,84 @@
 -- Load Informant.wtf UI Library
-local Informant = loadstring(game:HttpGet("https://raw.githubusercontent.com/weakhoes/Roblox-UI-Libs/main/2%20Informant.wtf%20Lib%20(FIXED)/informant.wtf%20Lib%20Example.lua"))()
+local Informant = loadstring(game:HttpGet("https://raw.githubusercontent.com/weakhoes/Roblox-UI-Libs/main/2%20Informant.wtf%20Lib%20(FIXED)/informant.wtf%20Lib%20Source.lua"))()
 
-local Window = Informant.Window("bizim scriptler")
+-- Create Window
+local Window = Informant:CreateWindow("bizim scriptler")
 
 -- Main Tab
-local MainTab = Window:Tab("Main")
-local MainSection = MainTab:Section("Scripts")
+local MainTab = Window:AddTab("Main")
+local MainSection = MainTab:AddSection("Scripts")
 
-MainSection:Button("Infinite Yield", "Admin commands GUI", function()
+MainSection:AddButton("Infinite Yield", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
 end)
 
-MainSection:Button("MM2 Script", "Murder Mystery 2 script", function()
+MainSection:AddButton("MM2 Script", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Joystickplays/psychic-octo-invention/main/source/yarhm/1.18/yarhm.lua"))()
 end)
 
-MainSection:Button("Arsenal Script", "Arsenal", function()
+MainSection:AddButton("Arsenal Script", function()
     loadstring(game:HttpGet("https://pastebin.com/raw/G6Ubkkuv"))()
 end)
 
-MainSection:Button("Fling ALL Script", "Fling all", function()
+MainSection:AddButton("Fling ALL Script", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/wemre3131/Scripts/refs/heads/main/Fling"))()
 end)
 
-MainSection:Button("Air Hub Script", "Air Hub", function()
+MainSection:AddButton("Air Hub Script", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Exunys/AirHub/main/AirHub.lua"))()
 end)
 
-MainSection:Button("Jerk off R6 Script", "Jerk Off", function()
+MainSection:AddButton("Jerk off R6 Script", function()
     loadstring(game:HttpGet("https://pastefy.app/wa3v2Vgm/raw"))()
 end)
 
-MainSection:Button("Jerk off R15 Script", "Jerk Off", function()
+MainSection:AddButton("Jerk off R15 Script", function()
     loadstring(game:HttpGet("https://pastefy.app/YZoglOyJ/raw"))()
 end)
 
-MainSection:Button("Azure Script", "Azure", function()
+MainSection:AddButton("Azure Script", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Actyrn/Scripts/main/AzureModded"))()
 end)
 
-MainSection:Button("Blox Fruit Script", "Blox Fruits", function()
+MainSection:AddButton("Blox Fruit Script", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/realredz/BloxFruits/refs/heads/main/Source.lua"))()
 end)
 
-MainSection:Button("Grow a Garden Script", "GAG", function()
+MainSection:AddButton("Grow a Garden Script", function()
     loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/NoLag-id/No-Lag-HUB/refs/heads/main/Loader/LoaderV1.lua"))()
 end)
 
-MainSection:Button("Forsaken Script", "Forsaken", function()
+MainSection:AddButton("Forsaken Script", function()
     loadstring(game:HttpGet("https://rifton.top/loader.lua"))()
 end)
 
-MainSection:Button("Bedwars Script", "Kill Aura and More", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/NewMainScript.lua", true))()
+MainSection:AddButton("Bedwars Script", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/NewMainScript.lua"))()
 end)
 
-MainSection:Button("Bee Swarm Simulator", "Auto Farm and Auto Find!", function()
+MainSection:AddButton("Bee Swarm Simulator", function()
     loadstring(game:GetObjects("rbxassetid://4384103988")[1].Source)("Pepsi Swarm")
 end)
 
 -- Player Tab
-local PlayerTab = Window:Tab("Player")
-local PlayerSection = PlayerTab:Section("Player")
+local PlayerTab = Window:AddTab("Player")
+local PlayerSection = PlayerTab:AddSection("Player")
 
-PlayerSection:Slider("Walkspeed", 16, 500, 16, function(s)
+PlayerSection:AddSlider("Walkspeed", 16, 500, 16, function(val)
     local plr = game.Players.LocalPlayer
     if plr.Character and plr.Character:FindFirstChild("Humanoid") then
-        plr.Character.Humanoid.WalkSpeed = s
+        plr.Character.Humanoid.WalkSpeed = val
     end
 end)
 
-PlayerSection:Slider("Jumppower", 50, 500, 50, function(s)
+PlayerSection:AddSlider("Jumppower", 50, 500, 50, function(val)
     local plr = game.Players.LocalPlayer
     if plr.Character and plr.Character:FindFirstChild("Humanoid") then
-        plr.Character.Humanoid.JumpPower = s
+        plr.Character.Humanoid.JumpPower = val
     end
 end)
 
-PlayerSection:Button("TP Tool", "Click to teleport", function()
+PlayerSection:AddButton("TP Tool", function()
     local mouse = game.Players.LocalPlayer:GetMouse()
     local tool = Instance.new("Tool")
     tool.RequiresHandle = false
@@ -89,15 +90,15 @@ PlayerSection:Button("TP Tool", "Click to teleport", function()
     tool.Parent = game.Players.LocalPlayer.Backpack
 end)
 
-PlayerSection:Button("Noclip", "Walk through walls", function()
+PlayerSection:AddButton("Noclip", function()
     loadstring(game:HttpGet("https://pastebin.com/raw/KcZxW1Sp"))()
 end)
 
-PlayerSection:Button("R15 To R6 (FE)", "Change animation", function()
+PlayerSection:AddButton("R15 To R6 (FE)", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Imagnir/r6_anims_for_r15/main/r6_anims.lua"))()
 end)
 
-MainSection:Button("FE Emote", "All Emotes Keybind Open is Comma", function()
+MainSection:AddButton("FE Emote", function()
     loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/Gi7331/scripts/main/Emote.lua"))()
 end)
 
@@ -113,7 +114,7 @@ local hrp = char:WaitForChild("HumanoidRootPart")
 local camLocked = false
 local flyingDir = { w = false, a = false, s = false, d = false }
 
-PlayerSection:Slider("Fly Speed", 50, 300, 50, function(val)
+PlayerSection:AddSlider("Fly Speed", 50, 300, 50, function(val)
     flySpeed = val
 end)
 
@@ -175,8 +176,8 @@ player.CharacterAdded:Connect(function(newChar)
 end)
 
 -- Infectious Smile Tab
-local InfectiousTab = Window:Tab("Infectious Smile")
-local InfectiousSection = InfectiousTab:Section("Infectious Smile")
+local InfectiousTab = Window:AddTab("Infectious Smile")
+local InfectiousSection = InfectiousTab:AddSection("Infectious Smile")
 
 local function cooldownZero(toolName)
     pcall(function()
@@ -190,7 +191,7 @@ end
 local tools = {"Bat", "Bottle", "Branch", "Katana", "Spear", "Chain", "Hatchet", "Knife"}
 
 for _, tool in ipairs(tools) do
-    InfectiousSection:Button("No " .. tool .. " Cooldown", "Removes cooldown when holding " .. tool, function()
+    InfectiousSection:AddButton("No " .. tool .. " Cooldown", function()
         cooldownZero(tool)
     end)
 end
