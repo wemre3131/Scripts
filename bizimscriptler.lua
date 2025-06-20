@@ -32,3 +32,39 @@ end)
 MainSection:NewButton("Forsaken Script", "Forsaken", function()
     loadstring(game:HttpGet("https://rifton.top/loader.lua"))()
 end)
+
+MainSection:NewButton("Bedwars Script", "Kill Aura and More" , function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/NewMainScript.lua", true))()
+end)
+
+MainSection:NewButton("Bee Swarm Simulator", "Auto Farm and Auto Find!" , function()
+    loadstring(game:GetObjects("rbxassetid://4384103988")[0X1].Source)("Pepsi Swarm")
+end)
+
+local Player = Window:NewTab("Player")
+local PlayerSection = Player:NewSection("Player")
+ 
+PlayerSection:NewSlider("Walkspeed", "Change's your speed", 500, 16, function(s)
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = s
+end)
+ 
+PlayerSection:NewSlider("Jumppower", "Make's you jump High", 500, 50, function(s)
+    game.Players.LocalPlayer.Character.Humanoid.JumpPower = s
+end)
+ 
+PlayerSection:NewButton("TP Tool", "Click to Teleport" , function()
+    loadstring(game:HttpGet("https://pastebin.com/raw/GuBiX19e"))();
+end)
+ 
+PlayerSection:NewButton("Noclip", "Walk threw Walls" , function()
+    loadstring(game:HttpGet("https://pastebin.com/raw/KcZxW1Sp"))();
+end)
+
+PlayerSection:NewButton("R15 To R6 (FE)", "Change's animation" , function()
+    loadstring(game:HttpGet(('https://raw.githubusercontent.com/Imagnir/r6_anims_for_r15/main/r6_anims.lua'),true))()
+end)
+
+MainSection:NewButton("FE Emote", "All Emotes Keybind Open Is Comma" , function()
+    --keybind to open is comma
+    loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/Gi7331/scripts/main/Emote.lua"))()
+end)
