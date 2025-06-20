@@ -15,7 +15,7 @@ local function Notify(title, text, duration)
     game.StarterGui:SetCore("SendNotification", {
         Title = title,
         Text = text,
-        Duration = duration or 5
+        Duration = duration or 3
     })
 end
 
@@ -28,7 +28,7 @@ local function LoadScript(url, name)
     local success, err = pcall(function()
         local content = game:HttpGet(url, true)
         loadstring(content)()
-        Notify("Script Loaded", name or "Script", 3)
+        Notify("Script Loaded", name or "Script")
     end)
     if not success then
         Notify("Error", "Failed to load "..(name or "script"), 5)
@@ -65,7 +65,7 @@ MainSection:NewButton("Bee Swarm Simulator", "Auto Farm and Auto Find!", functio
         local objects = game:GetObjects("rbxassetid://4384103988")
         if #objects > 0 then
             objects[1].Source("Pepsi Swarm")
-            Notify("Script Loaded", "Bee Swarm Simulator", 3)
+            Notify("Script Loaded", "Bee Swarm Simulator")
         end
     end)
 end)
@@ -163,7 +163,7 @@ PlayerSection:NewButton("TP Tool", "Click to teleport", function()
         end
     end)
     tool.Parent = LocalPlayer.Backpack
-    Notify("TP Tool", "Added to backpack", 3)
+    Notify("TP Tool", "Added to backpack")
 end)
 
 PlayerSection:NewButton("Noclip", "Walk through walls", function()
@@ -209,20 +209,16 @@ PlayerSection:NewSlider("Fly Speed", "Adjust fly speed", 300, 50, function(val)
     flySpeed = val
 end)
 
--- ========== CHEATS TAB ==========
-local CheatsTab = Window:NewTab("Cheats")
-local VisualSection = CheatsTab:NewSection("Visual")
-local MovementSection = CheatsTab:NewSection("Movement")
-local ServerSection = CheatsTab:NewSection("Server")
-
+-- ====== NEW FEATURES ======
 -- ESP System
 local espEnabled = false
 local espCache = {}
 
-VisualSection:NewToggle("ESP", "See players through walls", function(state)
-    espEnabled = state
+PlayerSection:NewButton("ESP Toggle", "See players through walls", function()
+    espEnabled = not espEnabled
     
     if espEnabled then
+        -- Create ESP for existing players
         for _, player in ipairs(Players:GetPlayers()) do
             if player ~= LocalPlayer and player.Character then
                 local highlight = Instance.new("Highlight")
@@ -233,6 +229,7 @@ VisualSection:NewToggle("ESP", "See players through walls", function(state)
             end
         end
         
+        -- Connect to new players
         Players.PlayerAdded:Connect(function(player)
             player.CharacterAdded:Connect(function(character)
                 if espEnabled then
@@ -244,24 +241,21 @@ VisualSection:NewToggle("ESP", "See players through walls", function(state)
                 end
             end)
         end)
+        Notify("ESP", "Enabled")
     else
+        -- Remove all ESP
         for player, highlight in pairs(espCache) do
             highlight:Destroy()
         end
         table.clear(espCache)
-    end
-end)
-
--- Speed Hack
-MovementSection:NewToggle("Speed Hack", "Increase walkspeed", function(state)
-    local humanoid = GetHumanoid()
-    if humanoid then
-        humanoid.WalkSpeed = state and 100 or originalWalkspeed
+        Notify("ESP", "Disabled")
     end
 end)
 
 -- Server Functions
-ServerSection:NewButton("Server Hop", "Join a new server", function()
+PlayerSection:NewButton("Server Hop", "Join a new server", function()
+    Notify("Server Hop", "Finding new server...")
+    
     local servers = {}
     local req = game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Desc&limit=100")
     for _, server in ipairs(game:GetService("HttpService"):JSONDecode(req).data) do
@@ -269,6 +263,7 @@ ServerSection:NewButton("Server Hop", "Join a new server", function()
             table.insert(servers, server.id)
         end
     end
+    
     if #servers > 0 then
         TeleportService:TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)])
     else
@@ -276,8 +271,30 @@ ServerSection:NewButton("Server Hop", "Join a new server", function()
     end
 end)
 
-ServerSection:NewButton("Rejoin", "Rejoin current server", function()
+PlayerSection:NewButton("Rejoin", "Rejoin current server", function()
+    Notify("Rejoin", "Rejoining server...")
     TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId)
+end)
+
+-- Anti-AFK System
+local antiAfkEnabled = false
+local antiAfkConnection
+
+PlayerSection:NewButton("Anti-AFK Toggle", "Prevent being kicked for idling", function()
+    antiAfkEnabled = not antiAfkEnabled
+    
+    if antiAfkEnabled then
+        antiAfkConnection = LocalPlayer.Idled:Connect(function()
+            game:GetService("VirtualUser"):ClickButton2(Vector2.new())
+        end)
+        Notify("Anti-AFK", "Enabled")
+    else
+        if antiAfkConnection then
+            antiAfkConnection:Disconnect()
+            antiAfkConnection = nil
+        end
+        Notify("Anti-AFK", "Disabled")
+    end
 end)
 
 -- ========== INFECTIOUS SMILE TAB ==========
@@ -293,16 +310,17 @@ for _, tool in ipairs(tools) do
                 local cooldown = LocalPlayer.Character[tool]:FindFirstChild("Cooldown")
                 if cooldown then
                     cooldown.Value = 0
-                    Notify("Cooldown Removed", tool, 3)
+                    Notify("Cooldown Removed", tool)
                 end
             end
         end)
     end)
 end
 
--- Anti-AFK
-LocalPlayer.Idled:Connect(function()
+-- Initialize Anti-AFK by default
+antiAfkConnection = LocalPlayer.Idled:Connect(function()
     game:GetService("VirtualUser"):ClickButton2(Vector2.new())
 end)
+antiAfkEnabled = true
 
 Notify("Script Loaded", "bizim scriptler is ready!", 5)
