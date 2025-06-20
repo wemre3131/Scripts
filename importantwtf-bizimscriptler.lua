@@ -1,120 +1,308 @@
--- Load Discord UI Library
-local DiscordLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/weakhoes/Roblox-UI-Libs/main/Discord%20UI%20Lib/Discord%20Lib%20Source.lua"))()
-local Window = DiscordLib:Window("bizim scriptler")
+-- Load Kavo UI Library
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
+local Window = Library.CreateLib("bizim scriptler", "Sentinel")
 
--- Main Tab
-local MainTab = Window:Tab("Main")
+-- Core Services
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local TeleportService = game:GetService("TeleportService")
 
--- We can add a label or section title since DiscordLib doesn't have explicit sections
-MainTab:Label("Scripts")
+-- Notification Function
+local function Notify(title, text, duration)
+    game.StarterGui:SetCore("SendNotification", {
+        Title = title,
+        Text = text,
+        Duration = duration or 5
+    })
+end
 
-MainTab:Button("Infinite Yield", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+-- ========== MAIN TAB ==========
+local MainTab = Window:NewTab("Main")
+local MainSection = MainTab:NewSection("Scripts")
+
+-- Safe Script Loader
+local function LoadScript(url, name)
+    local success, err = pcall(function()
+        local content = game:HttpGet(url, true)
+        loadstring(content)()
+        Notify("Script Loaded", name or "Script", 3)
+    end)
+    if not success then
+        Notify("Error", "Failed to load "..(name or "script"), 5)
+        warn("Script Error ("..name.."): "..err)
+    end
+end
+
+-- Script Buttons
+local scripts = {
+    {"Infinite Yield", "Admin commands GUI", "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"},
+    {"MM2 Script", "Murder Mystery 2 script", "https://raw.githubusercontent.com/Joystickplays/psychic-octo-invention/main/source/yarhm/1.18/yarhm.lua"},
+    {"Arsenal Script", "Arsenal", "https://pastebin.com/raw/G6Ubkkuv"},
+    {"Fling ALL Script", "Fling all", "https://raw.githubusercontent.com/wemre3131/Scripts/refs/heads/main/Fling"},
+    {"Air Hub Script", "Air Hub", "https://raw.githubusercontent.com/Exunys/AirHub/main/AirHub.lua"},
+    {"Jerk off R6 Script", "Jerk Off", "https://pastefy.app/wa3v2Vgm/raw"},
+    {"Jerk off R15 Script", "Jerk Off", "https://pastefy.app/YZoglOyJ/raw"},
+    {"Azure Script", "Azure", "https://raw.githubusercontent.com/Actyrn/Scripts/main/AzureModded"},
+    {"Blox Fruit Script", "Blox Fruits", "https://raw.githubusercontent.com/realredz/BloxFruits/refs/heads/main/Source.lua"},
+    {"Grow a Garden Script", "GAG", "https://raw.githubusercontent.com/NoLag-id/No-Lag-HUB/refs/heads/main/Loader/LoaderV1.lua"},
+    {"Forsaken Script", "Forsaken", "https://rifton.top/loader.lua"},
+    {"Bedwars Script", "Kill Aura and More", "https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/NewMainScript.lua"},
+    {"FE Emote", "All Emotes Keybind Open is Comma", "https://raw.githubusercontent.com/Gi7331/scripts/main/Emote.lua"}
+}
+
+for _, script in ipairs(scripts) do
+    MainSection:NewButton(script[1], script[2], function()
+        LoadScript(script[3], script[1])
+    end)
+end
+
+-- Special case for Bee Swarm
+MainSection:NewButton("Bee Swarm Simulator", "Auto Farm and Auto Find!", function()
+    pcall(function()
+        local objects = game:GetObjects("rbxassetid://4384103988")
+        if #objects > 0 then
+            objects[1].Source("Pepsi Swarm")
+            Notify("Script Loaded", "Bee Swarm Simulator", 3)
+        end
+    end)
 end)
 
-MainTab:Button("MM2 Script", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Joystickplays/psychic-octo-invention/main/source/yarhm/1.18/yarhm.lua"))()
+-- ========== PLAYER TAB ==========
+local PlayerTab = Window:NewTab("Player")
+local PlayerSection = PlayerTab:NewSection("Player")
+
+-- Movement Controls
+local flySpeed = 50
+local flying = false
+local bv, bg, flyConn
+local flyingDir = {w=false, a=false, s=false, d=false}
+local originalWalkspeed = 16
+local originalJumppower = 50
+
+-- Get Humanoid safely
+local function GetHumanoid()
+    return LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+end
+
+-- Fly System
+local function ToggleFly()
+    flying = not flying
+    local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    
+    if flying then
+        bv = Instance.new("BodyVelocity", hrp)
+        bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+        bg = Instance.new("BodyGyro", hrp)
+        bg.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+        
+        flyConn = RunService.Heartbeat:Connect(function()
+            local camCF = workspace.CurrentCamera.CFrame
+            local moveVec = Vector3.new()
+            if flyingDir.w then moveVec += camCF.LookVector end
+            if flyingDir.s then moveVec -= camCF.LookVector end
+            if flyingDir.a then moveVec -= camCF.RightVector end
+            if flyingDir.d then moveVec += camCF.RightVector end
+            
+            bv.Velocity = moveVec.Unit * flySpeed
+            bg.CFrame = camCF
+        end)
+    else
+        if flyConn then flyConn:Disconnect() end
+        if bv then bv:Destroy() end
+        if bg then bg:Destroy() end
+    end
+    Notify("Fly", flying and "Enabled" or "Disabled")
+end
+
+-- Input Handling for Fly
+UIS.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.W then flyingDir.w = true end
+    if input.KeyCode == Enum.KeyCode.A then flyingDir.a = true end
+    if input.KeyCode == Enum.KeyCode.S then flyingDir.s = true end
+    if input.KeyCode == Enum.KeyCode.D then flyingDir.d = true end
 end)
 
-MainTab:Button("Arsenal Script", function()
-    loadstring(game:HttpGet("https://pastebin.com/raw/G6Ubkkuv"))()
+UIS.InputEnded:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.W then flyingDir.w = false end
+    if input.KeyCode == Enum.KeyCode.A then flyingDir.a = false end
+    if input.KeyCode == Enum.KeyCode.S then flyingDir.s = false end
+    if input.KeyCode == Enum.KeyCode.D then flyingDir.d = false end
 end)
 
-MainTab:Button("Fling ALL Script", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/wemre3131/Scripts/refs/heads/main/Fling"))()
+-- Player Controls
+PlayerSection:NewSlider("Walkspeed", "Change your speed", 500, 16, function(s)
+    local humanoid = GetHumanoid()
+    if humanoid then
+        originalWalkspeed = s
+        humanoid.WalkSpeed = s
+    end
 end)
 
-MainTab:Button("Air Hub Script", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Exunys/AirHub/main/AirHub.lua"))()
+PlayerSection:NewSlider("Jumppower", "Change jump height", 500, 50, function(s)
+    local humanoid = GetHumanoid()
+    if humanoid then
+        originalJumppower = s
+        humanoid.JumpPower = s
+    end
 end)
 
-MainTab:Button("Jerk off R6 Script", function()
-    loadstring(game:HttpGet("https://pastefy.app/wa3v2Vgm/raw"))()
-end)
-
-MainTab:Button("Jerk off R15 Script", function()
-    loadstring(game:HttpGet("https://pastefy.app/YZoglOyJ/raw"))()
-end)
-
-MainTab:Button("Azure Script", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Actyrn/Scripts/main/AzureModded"))()
-end)
-
-MainTab:Button("Blox Fruit Script", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/realredz/BloxFruits/refs/heads/main/Source.lua"))()
-end)
-
-MainTab:Button("Grow a Garden Script", function()
-    loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/NoLag-id/No-Lag-HUB/refs/heads/main/Loader/LoaderV1.lua"))()
-end)
-
-MainTab:Button("Forsaken Script", function()
-    loadstring(game:HttpGet("https://rifton.top/loader.lua"))()
-end)
-
-MainTab:Button("Bedwars Script", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/NewMainScript.lua", true))()
-end)
-
-MainTab:Button("Bee Swarm Simulator", function()
-    loadstring(game:GetObjects("rbxassetid://4384103988")[1].Source)("Pepsi Swarm")
-end)
-
--- Player Tab
-local PlayerTab = Window:Tab("Player")
-
-PlayerTab:Label("Player")
-
-PlayerTab:Slider("Walkspeed", 16, 500, 16, function(value)
-    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
-end)
-
-PlayerTab:Slider("Jumppower", 50, 500, 50, function(value)
-    game.Players.LocalPlayer.Character.Humanoid.JumpPower = value
-end)
-
-PlayerTab:Button("TP Tool", function()
-    local mouse = game.Players.LocalPlayer:GetMouse()
+PlayerSection:NewButton("TP Tool", "Click to teleport", function()
     local tool = Instance.new("Tool")
     tool.RequiresHandle = false
     tool.Name = "Tp tool(Equip to Click TP)"
     tool.Activated:Connect(function()
-        local pos = mouse.Hit + Vector3.new(0, 2.5, 0)
-        pos = CFrame.new(pos.X, pos.Y, pos.Z)
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = pos
+        local pos = Mouse.Hit + Vector3.new(0, 2.5, 0)
+        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.CFrame = CFrame.new(pos.X, pos.Y, pos.Z)
+        end
     end)
-    tool.Parent = game.Players.LocalPlayer.Backpack
+    tool.Parent = LocalPlayer.Backpack
+    Notify("TP Tool", "Added to backpack", 3)
 end)
 
-PlayerTab:Button("Noclip", function()
-    loadstring(game:HttpGet("https://pastebin.com/raw/KcZxW1Sp"))()
+PlayerSection:NewButton("Noclip", "Walk through walls", function()
+    local noclip = false
+    local conn
+    
+    local function ToggleNoclip()
+        noclip = not noclip
+        if LocalPlayer.Character then
+            for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = not noclip
+                end
+            end
+        end
+        Notify("Noclip", noclip and "Enabled" or "Disabled")
+    end
+    
+    if not conn then
+        conn = RunService.Stepped:Connect(function()
+            if noclip and LocalPlayer.Character then
+                for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end)
+    end
+    
+    ToggleNoclip()
 end)
 
-PlayerTab:Button("R15 To R6 (FE)", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Imagnir/r6_anims_for_r15/main/r6_anims.lua"))()
+PlayerSection:NewButton("R15 To R6 (FE)", "Change animation", function()
+    LoadScript("https://raw.githubusercontent.com/Imagnir/r6_anims_for_r15/main/r6_anims.lua", "R15 to R6")
 end)
 
-MainTab:Button("FE Emote", function()
-    loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/Gi7331/scripts/main/Emote.lua"))()
+PlayerSection:NewButton("Fly (V to toggle)", "Toggle flight mode", function()
+    ToggleFly()
 end)
 
--- Fly + Camera Lock (logic stays the same, not part of UI)
--- [Keep your flying code as is]
+PlayerSection:NewSlider("Fly Speed", "Adjust fly speed", 300, 50, function(val)
+    flySpeed = val
+end)
 
--- Infectious Smile Tab
-local InfectiousTab = Window:Tab("Infectious Smile")
-InfectiousTab:Label("Infectious Smile")
+-- ========== CHEATS TAB ==========
+local CheatsTab = Window:NewTab("Cheats")
+local VisualSection = CheatsTab:NewSection("Visual")
+local MovementSection = CheatsTab:NewSection("Movement")
+local ServerSection = CheatsTab:NewSection("Server")
 
-local function cooldownZero(toolName)
-    pcall(function()
-        game.Players.LocalPlayer.Character[toolName].Cooldown.Value = 0
-    end)
-end
+-- ESP System
+local espEnabled = false
+local espCache = {}
+
+VisualSection:NewToggle("ESP", "See players through walls", function(state)
+    espEnabled = state
+    
+    if espEnabled then
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character then
+                local highlight = Instance.new("Highlight")
+                highlight.FillTransparency = 0.8
+                highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+                highlight.Parent = player.Character
+                espCache[player] = highlight
+            end
+        end
+        
+        Players.PlayerAdded:Connect(function(player)
+            player.CharacterAdded:Connect(function(character)
+                if espEnabled then
+                    local highlight = Instance.new("Highlight")
+                    highlight.FillTransparency = 0.8
+                    highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+                    highlight.Parent = character
+                    espCache[player] = highlight
+                end
+            end)
+        end)
+    else
+        for player, highlight in pairs(espCache) do
+            highlight:Destroy()
+        end
+        table.clear(espCache)
+    end
+end)
+
+-- Speed Hack
+MovementSection:NewToggle("Speed Hack", "Increase walkspeed", function(state)
+    local humanoid = GetHumanoid()
+    if humanoid then
+        humanoid.WalkSpeed = state and 100 or originalWalkspeed
+    end
+end)
+
+-- Server Functions
+ServerSection:NewButton("Server Hop", "Join a new server", function()
+    local servers = {}
+    local req = game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Desc&limit=100")
+    for _, server in ipairs(game:GetService("HttpService"):JSONDecode(req).data) do
+        if server.playing < server.maxPlayers and server.id ~= game.JobId then
+            table.insert(servers, server.id)
+        end
+    end
+    if #servers > 0 then
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)])
+    else
+        Notify("Server Hop", "No servers found!", 5)
+    end
+end)
+
+ServerSection:NewButton("Rejoin", "Rejoin current server", function()
+    TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId)
+end)
+
+-- ========== INFECTIOUS SMILE TAB ==========
+local InfectiousTab = Window:NewTab("Infectious Smile")
+local InfectiousSmileSection = InfectiousTab:NewSection("Infectious Smile")
 
 local tools = {"Bat", "Bottle", "Branch", "Katana", "Spear", "Chain", "Hatchet", "Knife"}
 
 for _, tool in ipairs(tools) do
-    InfectiousTab:Button("No " .. tool .. " Cooldown", function()
-        cooldownZero(tool)
+    InfectiousSmileSection:NewButton("No "..tool.." Cooldown", "Removes cooldown when holding "..tool, function()
+        pcall(function()
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild(tool) then
+                local cooldown = LocalPlayer.Character[tool]:FindFirstChild("Cooldown")
+                if cooldown then
+                    cooldown.Value = 0
+                    Notify("Cooldown Removed", tool, 3)
+                end
+            end
+        end)
     end)
 end
+
+-- Anti-AFK
+LocalPlayer.Idled:Connect(function()
+    game:GetService("VirtualUser"):ClickButton2(Vector2.new())
+end)
+
+Notify("Script Loaded", "bizim scriptler is ready!", 5)
