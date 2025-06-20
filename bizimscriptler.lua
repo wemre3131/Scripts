@@ -1,10 +1,18 @@
+-- Load UI Library
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-
 local Window = Library.CreateLib("bizim scriptler", "Sentinel")
 
+-- Tabs
 local MainTab = Window:NewTab("Main")
-local MainSection = MainTab:NewSection("Scripts")
+local PlayerTab = Window:NewTab("Player")
+local SmileTab = Window:NewTab("Infectious Smile")
 
+-- Sections
+local MainSection = MainTab:NewSection("Scripts")
+local PlayerSection = PlayerTab:NewSection("Player")
+local InfectiousSmileSection = SmileTab:NewSection("Cooldown Removers")
+
+-- Main Buttons
 MainSection:NewButton("Infinite Yield", "Admin commands GUI", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
 end)
@@ -25,20 +33,8 @@ MainSection:NewButton("Air Hub Script", "Air Hub", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Exunys/AirHub/main/AirHub.lua"))()
 end)
 
-MainSection:NewButton("Jerk off R6 Script", "Jerk Off", function()
-    loadstring(game:HttpGet("https://pastefy.app/wa3v2Vgm/raw"))()
-end)
-
-MainSection:NewButton("Jerk off R15 Script", "Jerk Off", function()
-    loadstring(game:HttpGet("https://pastefy.app/YZoglOyJ/raw"))()
-end)
-
 MainSection:NewButton("Azure Script", "Azure", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Actyrn/Scripts/main/AzureModded"))()
-end)
-
-MainSection:NewButton("Blox Fruit Script", "Azure", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/realredz/BloxFruits/refs/heads/main/Source.lua"))()
 end)
 
 MainSection:NewButton("Blox Fruit Script", "Blox Fruits", function()
@@ -53,69 +49,70 @@ MainSection:NewButton("Forsaken Script", "Forsaken", function()
     loadstring(game:HttpGet("https://rifton.top/loader.lua"))()
 end)
 
-MainSection:NewButton("Bedwars Script", "Kill Aura and More" , function()
+MainSection:NewButton("Bedwars Script", "Kill Aura and More", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/NewMainScript.lua", true))()
 end)
 
-MainSection:NewButton("Bee Swarm Simulator", "Auto Farm and Auto Find!" , function()
-    loadstring(game:GetObjects("rbxassetid://4384103988")[0X1].Source)("Pepsi Swarm")
+MainSection:NewButton("Bee Swarm Simulator", "Auto Farm and Auto Find!", function()
+    loadstring(game:GetObjects("rbxassetid://4384103988")[1].Source)("Pepsi Swarm")
 end)
 
-local Player = Window:NewTab("Player")
-local PlayerSection = Player:NewSection("Player")
- 
-PlayerSection:NewSlider("Walkspeed", "Change's your speed", 500, 16, function(s)
-    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = s
-end)
- 
-PlayerSection:NewSlider("Jumppower", "Make's you jump High", 500, 50, function(s)
-    game.Players.LocalPlayer.Character.Humanoid.JumpPower = s
-end)
- 
-PlayerSection:NewButton("TP Tool", "Click to Teleport" , function()
-    local mouse = game.Players.LocalPlayer:GetMouse()
-    local tool = Instance.new("Tool")
-    tool.RequiresHandle = false
-    tool.Name = "Tp tool(Equip to Click TP)"
-    tool.Activated:Connect(function()
-        local pos = mouse.Hit + Vector3.new(0, 2.5, 0)
-        pos = CFrame.new(pos.X, pos.Y, pos.Z)
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = pos
-    end)
-    tool.Parent = game.Players.LocalPlayer.Backpack
-end)
- 
-PlayerSection:NewButton("Noclip", "Walk threw Walls" , function()
-    loadstring(game:HttpGet("https://pastebin.com/raw/KcZxW1Sp"))()
-end)
-
-PlayerSection:NewButton("R15 To R6 (FE)", "Change's animation" , function()
-    loadstring(game:HttpGet(('https://raw.githubusercontent.com/Imagnir/r6_anims_for_r15/main/r6_anims.lua'), true))()
-end)
-
-MainSection:NewButton("FE Emote", "All Emotes Keybind Open Is Comma" , function()
-    --keybind to open is comma
+MainSection:NewButton("FE Emote", "All Emotes Keybind Open Is Comma", function()
     loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/Gi7331/scripts/main/Emote.lua"))()
 end)
 
--- === Fly Script ===
+-- Player Controls
+PlayerSection:NewSlider("Walkspeed", "Change's your speed", 500, 16, function(s)
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = s
+end)
 
-local flySpeed = 50
-local flying = false
-local bv, bg, conn
+PlayerSection:NewSlider("Jumppower", "Make's you jump High", 500, 50, function(s)
+    game.Players.LocalPlayer.Character.Humanoid.JumpPower = s
+end)
 
+PlayerSection:NewButton("TP Tool", "Click to Teleport", function()
+    local mouse = game.Players.LocalPlayer:GetMouse()
+    local tool = Instance.new("Tool")
+    tool.RequiresHandle = false
+    tool.Name = "Tp tool (Equip to Click TP)"
+    tool.Activated:Connect(function()
+        local pos = mouse.Hit + Vector3.new(0, 2.5, 0)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(pos.X, pos.Y, pos.Z)
+    end)
+    tool.Parent = game.Players.LocalPlayer.Backpack
+end)
+
+PlayerSection:NewButton("Noclip", "Walk through Walls", function()
+    loadstring(game:HttpGet("https://pastebin.com/raw/KcZxW1Sp"))()
+end)
+
+PlayerSection:NewButton("R15 To R6 (FE)", "Change's animation", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Imagnir/r6_anims_for_r15/main/r6_anims.lua"))()
+end)
+
+-- Infectious Smile Cooldown Removers
+local weapons = {"Bat", "Bottle", "Branch", "Katana", "Spear", "Chain", "Hatchet", "Knife"}
+for _, weapon in pairs(weapons) do
+    InfectiousSmileSection:NewButton("No " .. weapon .. " Cooldown (Hold " .. weapon .. ")", function()
+        local char = game.Players.LocalPlayer.Character
+        local tool = char and char:FindFirstChild(weapon)
+        if tool and tool:FindFirstChild("Cooldown") then
+            tool.Cooldown.Value = 0
+        end
+    end)
+end
+
+-- Fly and Camera Lock
 local UIS = game:GetService("UserInputService")
 local RS = game:GetService("RunService")
 local player = game.Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local hrp = char:WaitForChild("HumanoidRootPart")
-
-local flyingDir = {
-    w = false,
-    a = false,
-    s = false,
-    d = false
-}
+local flySpeed = 50
+local flying = false
+local camLocked = false
+local bv, bg, flyConn
+local flyDir = {w = false, a = false, s = false, d = false}
 
 PlayerSection:NewSlider("Fly Speed", "Adjust fly speed (F to toggle)", 300, 50, function(val)
     flySpeed = val
@@ -124,7 +121,7 @@ end)
 local function startFlying()
     bv = Instance.new("BodyVelocity")
     bv.MaxForce = Vector3.new(1e9, 1e9, 1e9)
-    bv.Velocity = Vector3.new(0, 0, 0)
+    bv.Velocity = Vector3.new()
     bv.Parent = hrp
 
     bg = Instance.new("BodyGyro")
@@ -132,21 +129,14 @@ local function startFlying()
     bg.CFrame = workspace.CurrentCamera.CFrame
     bg.Parent = hrp
 
-    conn = RS.Heartbeat:Connect(function()
+    flyConn = RS.Heartbeat:Connect(function()
         local camCF = workspace.CurrentCamera.CFrame
-        local moveVec = Vector3.new(0, 0, 0)
-
-        if flyingDir.w then moveVec += camCF.LookVector end
-        if flyingDir.s then moveVec -= camCF.LookVector end
-        if flyingDir.a then moveVec -= camCF.RightVector end
-        if flyingDir.d then moveVec += camCF.RightVector end
-
-        if moveVec.Magnitude > 0 then
-            bv.Velocity = moveVec.Unit * flySpeed
-        else
-            bv.Velocity = Vector3.new(0, 0, 0)
-        end
-
+        local moveVec = Vector3.new()
+        if flyDir.w then moveVec += camCF.LookVector end
+        if flyDir.s then moveVec -= camCF.LookVector end
+        if flyDir.a then moveVec -= camCF.RightVector end
+        if flyDir.d then moveVec += camCF.RightVector end
+        bv.Velocity = moveVec.Magnitude > 0 and moveVec.Unit * flySpeed or Vector3.new()
         bg.CFrame = camCF
     end)
 end
@@ -154,82 +144,36 @@ end
 local function stopFlying()
     if bv then bv:Destroy() end
     if bg then bg:Destroy() end
-    if conn then conn:Disconnect() end
+    if flyConn then flyConn:Disconnect() end
 end
 
-UIS.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-
-    if input.KeyCode == Enum.KeyCode.V then
+UIS.InputBegan:Connect(function(input, gpe)
+    if gpe then return end
+    if input.KeyCode == Enum.KeyCode.F then
         flying = not flying
-        if flying then
-            startFlying()
-        else
-            stopFlying()
+        if flying then startFlying() else stopFlying() end
+    elseif input.KeyCode == Enum.KeyCode.E then
+        camLocked = not camLocked
+        workspace.CurrentCamera.CameraType = camLocked and Enum.CameraType.Scriptable or Enum.CameraType.Custom
+        if camLocked then
+            workspace.CurrentCamera.CFrame = hrp.CFrame
         end
+    elseif input.KeyCode == Enum.KeyCode.W then flyDir.w = true
+    elseif input.KeyCode == Enum.KeyCode.A then flyDir.a = true
+    elseif input.KeyCode == Enum.KeyCode.S then flyDir.s = true
+    elseif input.KeyCode == Enum.KeyCode.D then flyDir.d = true
     end
-
-    if input.KeyCode == Enum.KeyCode.W then flyingDir.w = true end
-    if input.KeyCode == Enum.KeyCode.S then flyingDir.s = true end
-    if input.KeyCode == Enum.KeyCode.A then flyingDir.a = true end
-    if input.KeyCode == Enum.KeyCode.D then flyingDir.d = true end
 end)
 
 UIS.InputEnded:Connect(function(input)
-    if input.KeyCode == Enum.KeyCode.W then flyingDir.w = false end
-    if input.KeyCode == Enum.KeyCode.S then flyingDir.s = false end
-    if input.KeyCode == Enum.KeyCode.A then flyingDir.a = false end
-    if input.KeyCode == Enum.KeyCode.D then flyingDir.d = false end
+    if input.KeyCode == Enum.KeyCode.W then flyDir.w = false end
+    if input.KeyCode == Enum.KeyCode.A then flyDir.a = false end
+    if input.KeyCode == Enum.KeyCode.S then flyDir.s = false end
+    if input.KeyCode == Enum.KeyCode.D then flyDir.d = false end
 end)
 
 player.CharacterAdded:Connect(function(newChar)
     char = newChar
     hrp = char:WaitForChild("HumanoidRootPart")
-    if flying then
-        stopFlying()
-        startFlying()
-    end
-end)
-
-local InfectiousSmile = Window:NewTab("Infectious Smile")
-local InfectiousSmile  = Player:NewSection("Infectious Smile")
-
-InfectiousSmileSection:NewButton("No Bat Cooldown (u must Hold the Bat)" , function()
-Callback = function()
-		game.Players.LocalPlayer.Character.Bat.Cooldown.Value = 0
-end)
-
-InfectiousSmileSection:NewButton("No Bottle Cooldown (Click while holding Bottle!)" , function()
-Callback = function()
-		game.Players.LocalPlayer.Character.Bottle.Cooldown.Value = 0
-end)
-
-InfectiousSmileSection:NewButton("No Branch Cooldown (Click while holding Branch!)" , function()
-Callback = function()
-		game.Players.LocalPlayer.Character.Branch.Cooldown.Value = 0
-end)
-
-InfectiousSmileSection:NewButton("No Katana Cooldown (Click while holding Katana!)" , function()
-Callback = function()
-		game.Players.LocalPlayer.Character.Katana.Cooldown.Value = 0
-end)
-
-InfectiousSmileSection:NewButton("No Spear Cooldown (Click while holding Spear!)" , function()
-Callback = function()
-		game.Players.LocalPlayer.Character.Spear.Cooldown.Value = 0
-end)
-
-InfectiousSmileSection:NewButton("No Chain Cooldown (Click while holding Chain!)" , function()
-Callback = function()
-		game.Players.LocalPlayer.Character.Chain.Cooldown.Value = 0
-end)
-
-InfectiousSmileSection:NewButton("No Hatchet Cooldown (Click while holding Hatchet!)" , function()
-Callback = function()
-		game.Players.LocalPlayer.Character.Hatchet.Cooldown.Value = 0
-end)
-
-InfectiousSmileSection:NewButton("No Knife Cooldown (Click while holding Knife!)" , function()
-Callback = function()
-		game.Players.LocalPlayer.Character.Knife.Cooldown.Value = 0
+    if flying then stopFlying(); startFlying() end
 end)
