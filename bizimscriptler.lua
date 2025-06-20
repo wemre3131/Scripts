@@ -71,7 +71,16 @@ end)
 PlayerSection:NewSlider("Jumppower", "Make's you jump High", 500, 50, function(s)
     game.Players.LocalPlayer.Character.Humanoid.JumpPower = s
 end)
- 
+
+-- Instruction buttons added here
+PlayerSection:NewButton("Press F to Fly (Toggle)", "Use F key to toggle flying on/off", function()
+    -- Just a reminder button, no action
+end)
+
+PlayerSection:NewButton("Press E to Camera Lock (Toggle)", "Use E key to toggle camera lock on/off", function()
+    -- Just a reminder button, no action
+end)
+
 PlayerSection:NewButton("TP Tool", "Click to Teleport" , function()
     local mouse = game.Players.LocalPlayer:GetMouse()
     local tool = Instance.new("Tool")
@@ -94,7 +103,6 @@ PlayerSection:NewButton("R15 To R6 (FE)", "Change's animation" , function()
 end)
 
 MainSection:NewButton("FE Emote", "All Emotes Keybind Open Is Comma" , function()
-    --keybind to open is comma
     loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/Gi7331/scripts/main/Emote.lua"))()
 end)
 
@@ -157,15 +165,30 @@ local function stopFlying()
     if conn then conn:Disconnect() end
 end
 
+-- Camera Lock Variables
+local cameraLocked = false
+local cam = workspace.CurrentCamera
+
 UIS.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
 
-    if input.KeyCode == Enum.KeyCode.V then
+    -- Fly toggle (F)
+    if input.KeyCode == Enum.KeyCode.F then
         flying = not flying
         if flying then
             startFlying()
         else
             stopFlying()
+        end
+    end
+
+    -- Camera lock toggle (E)
+    if input.KeyCode == Enum.KeyCode.E then
+        cameraLocked = not cameraLocked
+        if cameraLocked then
+            cam.CameraType = Enum.CameraType.Scriptable
+        else
+            cam.CameraType = Enum.CameraType.Custom
         end
     end
 
@@ -180,6 +203,14 @@ UIS.InputEnded:Connect(function(input)
     if input.KeyCode == Enum.KeyCode.S then flyingDir.s = false end
     if input.KeyCode == Enum.KeyCode.A then flyingDir.a = false end
     if input.KeyCode == Enum.KeyCode.D then flyingDir.d = false end
+end)
+
+-- Update camera when locked every frame
+RS.RenderStepped:Connect(function()
+    if cameraLocked and hrp and hrp.Parent then
+        local targetCFrame = hrp.CFrame * CFrame.new(0, 2, -6)
+        cam.CFrame = targetCFrame
+    end
 end)
 
 player.CharacterAdded:Connect(function(newChar)
