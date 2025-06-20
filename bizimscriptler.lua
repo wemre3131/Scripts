@@ -71,16 +71,7 @@ end)
 PlayerSection:NewSlider("Jumppower", "Make's you jump High", 500, 50, function(s)
     game.Players.LocalPlayer.Character.Humanoid.JumpPower = s
 end)
-
--- Instruction buttons added here
-PlayerSection:NewButton("Press F to Fly (Toggle)", "Use F key to toggle flying on/off", function()
-    -- Just a reminder button, no action
-end)
-
-PlayerSection:NewButton("Press E to Camera Lock (Toggle)", "Use E key to toggle camera lock on/off", function()
-    -- Just a reminder button, no action
-end)
-
+ 
 PlayerSection:NewButton("TP Tool", "Click to Teleport" , function()
     local mouse = game.Players.LocalPlayer:GetMouse()
     local tool = Instance.new("Tool")
@@ -103,6 +94,7 @@ PlayerSection:NewButton("R15 To R6 (FE)", "Change's animation" , function()
 end)
 
 MainSection:NewButton("FE Emote", "All Emotes Keybind Open Is Comma" , function()
+    --keybind to open is comma
     loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/Gi7331/scripts/main/Emote.lua"))()
 end)
 
@@ -165,30 +157,15 @@ local function stopFlying()
     if conn then conn:Disconnect() end
 end
 
--- Camera Lock Variables
-local cameraLocked = false
-local cam = workspace.CurrentCamera
-
 UIS.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
 
-    -- Fly toggle (F)
-    if input.KeyCode == Enum.KeyCode.F then
+    if input.KeyCode == Enum.KeyCode.V then
         flying = not flying
         if flying then
             startFlying()
         else
             stopFlying()
-        end
-    end
-
-    -- Camera lock toggle (E)
-    if input.KeyCode == Enum.KeyCode.E then
-        cameraLocked = not cameraLocked
-        if cameraLocked then
-            cam.CameraType = Enum.CameraType.Scriptable
-        else
-            cam.CameraType = Enum.CameraType.Custom
         end
     end
 
@@ -205,14 +182,6 @@ UIS.InputEnded:Connect(function(input)
     if input.KeyCode == Enum.KeyCode.D then flyingDir.d = false end
 end)
 
--- Update camera when locked every frame
-RS.RenderStepped:Connect(function()
-    if cameraLocked and hrp and hrp.Parent then
-        local targetCFrame = hrp.CFrame * CFrame.new(0, 2, -6)
-        cam.CFrame = targetCFrame
-    end
-end)
-
 player.CharacterAdded:Connect(function(newChar)
     char = newChar
     hrp = char:WaitForChild("HumanoidRootPart")
@@ -220,4 +189,47 @@ player.CharacterAdded:Connect(function(newChar)
         stopFlying()
         startFlying()
     end
+end)
+
+local InfectiousSmile = Window:NewTab("Infectious Smile")
+local InfectiousSmile  = Player:NewSection("Infectious Smile")
+
+InfectiousSmileSection:NewButton("No Bat Cooldown (u must Hold the Bat)" , function()
+Callback = function()
+		game.Players.LocalPlayer.Character.Bat.Cooldown.Value = 0
+end)
+
+InfectiousSmileSection:NewButton("No Bottle Cooldown (Click while holding Bottle!)" , function()
+Callback = function()
+		game.Players.LocalPlayer.Character.Bottle.Cooldown.Value = 0
+end)
+
+InfectiousSmileSection:NewButton("No Branch Cooldown (Click while holding Branch!)" , function()
+Callback = function()
+		game.Players.LocalPlayer.Character.Branch.Cooldown.Value = 0
+end)
+
+InfectiousSmileSection:NewButton("No Katana Cooldown (Click while holding Katana!)" , function()
+Callback = function()
+		game.Players.LocalPlayer.Character.Katana.Cooldown.Value = 0
+end)
+
+InfectiousSmileSection:NewButton("No Spear Cooldown (Click while holding Spear!)" , function()
+Callback = function()
+		game.Players.LocalPlayer.Character.Spear.Cooldown.Value = 0
+end)
+
+InfectiousSmileSection:NewButton("No Chain Cooldown (Click while holding Chain!)" , function()
+Callback = function()
+		game.Players.LocalPlayer.Character.Chain.Cooldown.Value = 0
+end)
+
+InfectiousSmileSection:NewButton("No Hatchet Cooldown (Click while holding Hatchet!)" , function()
+Callback = function()
+		game.Players.LocalPlayer.Character.Hatchet.Cooldown.Value = 0
+end)
+
+InfectiousSmileSection:NewButton("No Knife Cooldown (Click while holding Knife!)" , function()
+Callback = function()
+		game.Players.LocalPlayer.Character.Knife.Cooldown.Value = 0
 end)
