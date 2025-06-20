@@ -160,7 +160,7 @@ end
 UIS.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
 
-    if input.KeyCode == Enum.KeyCode.F then
+    if input.KeyCode == Enum.KeyCode.V then
         flying = not flying
         if flying then
             startFlying()
