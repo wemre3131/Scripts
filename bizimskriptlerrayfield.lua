@@ -278,6 +278,50 @@ PlayerTab:CreateButton({ Name = "Rejoin", Callback = function()
     game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId)
 end})
 
+PlayerTab:CreateButton({ Name = "Flyjump", 
+Callback = function()
+    local UIS = game:GetService("UserInputService")
+local player = game:GetService("Players").LocalPlayer
+local humanoid
+
+local enabled = false
+
+local function enableFlyJump()
+	local character = player.Character or player.CharacterAdded:Wait()
+	humanoid = character:FindFirstChildOfClass("Humanoid")
+	if not humanoid then return end
+
+	UIS.JumpRequest:Connect(function()
+		if enabled and humanoid then
+			humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+			humanoid:ChangeState(Enum.HumanoidStateType.Freefall)
+		end
+	end)
+end
+
+-- Toggle with F key
+UIS.InputBegan:Connect(function(input, gpe)
+	if gpe then return end
+	if input.KeyCode == Enum.KeyCode.F then
+		enabled = not enabled
+		if enabled then
+			enableFlyJump()
+			print("FlyJump enabled")
+		else
+			print("FlyJump disabled")
+		end
+	end
+end)
+
+player.CharacterAdded:Connect(function()
+	if enabled then
+		wait(1)
+		enableFlyJump()
+	end
+end)
+
+end})
+
 -- Anti-AFK
 PlayerTab:CreateButton({ Name = "Anti-AFK Toggle", Callback = function()
     local pl = game:GetService("Players").LocalPlayer
