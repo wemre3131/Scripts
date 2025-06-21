@@ -1,10 +1,6 @@
--- Load Hydra UI Library
-local Hydra = loadstring(game:HttpGet("https://raw.githubusercontent.com/weakhoes/Roblox-UI-Libs/main/Hydra%20Lib/Hydra%20UI.lua"))()
-local Window = Hydra:CreateWindow({
-    Title = "bizim scriptler",
-    Subtitle = "Hydra UI",
-    Position = UDim2.new(0.5, -200, 0.5, -150)
-})
+-- Load Pepsi's UI Library
+local Library = loadstring(game:GetObjects("rbxassetid://7657867786")[1].Source)()
+local Window = Library:CreateWindow("bizim scriptler")
 
 -- Core Services
 local Players = game:GetService("Players")
@@ -24,8 +20,8 @@ local function Notify(title, text, duration)
 end
 
 -- ========== MAIN TAB ==========
-local MainTab = Window:CreateTab("Main Scripts")
-local MainSection = MainTab:CreateSection("Popular Scripts")
+local MainTab = Window:AddTab("Main")
+local MainSection = MainTab:AddSection("Scripts")
 
 -- Safe Script Loader
 local function LoadScript(url, name)
@@ -42,34 +38,34 @@ end
 
 -- Script Buttons
 local scripts = {
-    {"Infinite Yield", "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"},
-    {"MM2 Script", "https://raw.githubusercontent.com/Joystickplays/psychic-octo-invention/main/source/yarhm/1.18/yarhm.lua"},
-    {"Arsenal Script", "https://pastebin.com/raw/G6Ubkkuv"},
-    {"Fling ALL Script", "https://raw.githubusercontent.com/wemre3131/Scripts/refs/heads/main/Fling"},
-    {"Air Hub Script", "https://raw.githubusercontent.com/Exunys/AirHub/main/AirHub.lua"},
-    {"Jerk off R6", "https://pastefy.app/wa3v2Vgm/raw"},
-    {"Jerk off R15", "https://pastefy.app/YZoglOyJ/raw"},
-    {"Azure Script", "https://raw.githubusercontent.com/Actyrn/Scripts/main/AzureModded"},
-    {"Blox Fruit Script", "https://raw.githubusercontent.com/realredz/BloxFruits/refs/heads/main/Source.lua"},
-    {"Grow a Garden", "https://raw.githubusercontent.com/NoLag-id/No-Lag-HUB/refs/heads/main/Loader/LoaderV1.lua"},
-    {"Forsaken Script", "https://rifton.top/loader.lua"},
-    {"Bedwars Script", "https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/NewMainScript.lua"},
-    {"FE Emote", "https://raw.githubusercontent.com/Gi7331/scripts/main/Emote.lua"}
+    {"Infinite Yield", "Admin commands GUI", "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"},
+    {"MM2 Script", "Murder Mystery 2 script", "https://raw.githubusercontent.com/Joystickplays/psychic-octo-invention/main/source/yarhm/1.18/yarhm.lua"},
+    {"Arsenal Script", "Arsenal", "https://pastebin.com/raw/G6Ubkkuv"},
+    {"Fling ALL Script", "Fling all", "https://raw.githubusercontent.com/wemre3131/Scripts/refs/heads/main/Fling"},
+    {"Air Hub Script", "Air Hub", "https://raw.githubusercontent.com/Exunys/AirHub/main/AirHub.lua"},
+    {"Jerk off R6 Script", "Jerk Off", "https://pastefy.app/wa3v2Vgm/raw"},
+    {"Jerk off R15 Script", "Jerk Off", "https://pastefy.app/YZoglOyJ/raw"},
+    {"Azure Script", "Azure", "https://raw.githubusercontent.com/Actyrn/Scripts/main/AzureModded"},
+    {"Blox Fruit Script", "Blox Fruits", "https://raw.githubusercontent.com/realredz/BloxFruits/refs/heads/main/Source.lua"},
+    {"Grow a Garden Script", "GAG", "https://raw.githubusercontent.com/NoLag-id/No-Lag-HUB/refs/heads/main/Loader/LoaderV1.lua"},
+    {"Forsaken Script", "Forsaken", "https://rifton.top/loader.lua"},
+    {"Bedwars Script", "Kill Aura and More", "https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/NewMainScript.lua"},
+    {"FE Emote", "All Emotes Keybind Open is Comma", "https://raw.githubusercontent.com/Gi7331/scripts/main/Emote.lua"}
 }
 
 for _, script in ipairs(scripts) do
-    MainSection:CreateButton({
-        Title = script[1],
-        Description = "Load Script",
+    MainSection:AddButton({
+        Text = script[1],
+        Description = script[2],
         Callback = function()
-            LoadScript(script[2], script[1])
+            LoadScript(script[3], script[1])
         end
     })
 end
 
 -- Special case for Bee Swarm
-MainSection:CreateButton({
-    Title = "Bee Swarm Simulator",
+MainSection:AddButton({
+    Text = "Bee Swarm Simulator",
     Description = "Auto Farm and Auto Find!",
     Callback = function()
         pcall(function()
@@ -83,8 +79,8 @@ MainSection:CreateButton({
 })
 
 -- ========== PLAYER TAB ==========
-local PlayerTab = Window:CreateTab("Player Settings")
-local PlayerSection = PlayerTab:CreateSection("Movement")
+local PlayerTab = Window:AddTab("Player")
+local PlayerSection = PlayerTab:AddSection("Player")
 
 -- Movement Controls
 local flySpeed = 50
@@ -147,12 +143,12 @@ UIS.InputEnded:Connect(function(input)
 end)
 
 -- Player Controls
-PlayerSection:CreateSlider({
-    Title = "Walkspeed",
-    Description = "Change movement speed",
-    Default = 16,
+PlayerSection:AddSlider({
+    Text = "Walkspeed",
+    Description = "Change your speed",
     Min = 16,
     Max = 500,
+    Default = 16,
     Callback = function(s)
         local humanoid = GetHumanoid()
         if humanoid then
@@ -162,12 +158,12 @@ PlayerSection:CreateSlider({
     end
 })
 
-PlayerSection:CreateSlider({
-    Title = "Jump Power",
+PlayerSection:AddSlider({
+    Text = "Jumppower",
     Description = "Change jump height",
-    Default = 50,
     Min = 50,
     Max = 500,
+    Default = 50,
     Callback = function(s)
         local humanoid = GetHumanoid()
         if humanoid then
@@ -177,8 +173,8 @@ PlayerSection:CreateSlider({
     end
 })
 
-PlayerSection:CreateButton({
-    Title = "TP Tool",
+PlayerSection:AddButton({
+    Text = "TP Tool",
     Description = "Click to teleport",
     Callback = function()
         local tool = Instance.new("Tool")
@@ -196,8 +192,8 @@ PlayerSection:CreateButton({
     end
 })
 
-PlayerSection:CreateButton({
-    Title = "Noclip",
+PlayerSection:AddButton({
+    Text = "Noclip",
     Description = "Walk through walls",
     Callback = function()
         local noclip = false
@@ -231,48 +227,44 @@ PlayerSection:CreateButton({
     end
 })
 
-PlayerSection:CreateButton({
-    Title = "R15 To R6 (FE)",
+PlayerSection:AddButton({
+    Text = "R15 To R6 (FE)",
     Description = "Change animation",
     Callback = function()
         LoadScript("https://raw.githubusercontent.com/Imagnir/r6_anims_for_r15/main/r6_anims.lua", "R15 to R6")
     end
 })
 
-PlayerSection:CreateButton({
-    Title = "Fly (V to toggle)",
+PlayerSection:AddButton({
+    Text = "Fly (V to toggle)",
     Description = "Toggle flight mode",
     Callback = function()
         ToggleFly()
     end
 })
 
-PlayerSection:CreateSlider({
-    Title = "Fly Speed",
-    Description = "Adjust flight speed",
-    Default = 50,
+PlayerSection:AddSlider({
+    Text = "Fly Speed",
+    Description = "Adjust fly speed",
     Min = 50,
     Max = 300,
+    Default = 50,
     Callback = function(val)
         flySpeed = val
     end
 })
 
--- ====== UTILITY FEATURES ======
-local UtilitySection = PlayerTab:CreateSection("Utility")
-
--- ESP System
+-- ====== ESP SYSTEM ======
 local espEnabled = false
 local espCache = {}
 
-UtilitySection:CreateButton({
-    Title = "ESP Toggle",
+PlayerSection:AddButton({
+    Text = "ESP Toggle",
     Description = "See players through walls",
     Callback = function()
         espEnabled = not espEnabled
         
         if espEnabled then
-            -- Create ESP for existing players
             for _, player in ipairs(Players:GetPlayers()) do
                 if player ~= LocalPlayer and player.Character then
                     local highlight = Instance.new("Highlight")
@@ -283,7 +275,6 @@ UtilitySection:CreateButton({
                 end
             end
             
-            -- Connect to new players
             Players.PlayerAdded:Connect(function(player)
                 player.CharacterAdded:Connect(function(character)
                     if espEnabled then
@@ -297,7 +288,6 @@ UtilitySection:CreateButton({
             end)
             Notify("ESP", "Enabled")
         else
-            -- Remove all ESP
             for player, highlight in pairs(espCache) do
                 highlight:Destroy()
             end
@@ -307,9 +297,9 @@ UtilitySection:CreateButton({
     end
 })
 
--- Server Functions
-UtilitySection:CreateButton({
-    Title = "Server Hop",
+-- ====== SERVER FUNCTIONS ======
+PlayerSection:AddButton({
+    Text = "Server Hop",
     Description = "Join a new server",
     Callback = function()
         Notify("Server Hop", "Finding new server...")
@@ -330,8 +320,8 @@ UtilitySection:CreateButton({
     end
 })
 
-UtilitySection:CreateButton({
-    Title = "Rejoin",
+PlayerSection:AddButton({
+    Text = "Rejoin",
     Description = "Rejoin current server",
     Callback = function()
         Notify("Rejoin", "Rejoining server...")
@@ -339,12 +329,12 @@ UtilitySection:CreateButton({
     end
 })
 
--- Anti-AFK System
-local antiAfkEnabled = true
+-- ====== ANTI-AFK SYSTEM ======
+local antiAfkEnabled = false
 local antiAfkConnection
 
-UtilitySection:CreateButton({
-    Title = "Anti-AFK Toggle",
+PlayerSection:AddButton({
+    Text = "Anti-AFK Toggle",
     Description = "Prevent being kicked for idling",
     Callback = function()
         antiAfkEnabled = not antiAfkEnabled
@@ -364,20 +354,15 @@ UtilitySection:CreateButton({
     end
 })
 
--- Initialize Anti-AFK
-antiAfkConnection = LocalPlayer.Idled:Connect(function()
-    game:GetService("VirtualUser"):ClickButton2(Vector2.new())
-end)
-
 -- ========== INFECTIOUS SMILE TAB ==========
-local InfectiousTab = Window:CreateTab("Infectious Smile")
-local InfectiousSection = InfectiousTab:CreateSection("Weapon Cooldowns")
+local InfectiousTab = Window:AddTab("Infectious Smile")
+local InfectiousSmileSection = InfectiousTab:AddSection("Infectious Smile")
 
 local tools = {"Bat", "Bottle", "Branch", "Katana", "Spear", "Chain", "Hatchet", "Knife"}
 
 for _, tool in ipairs(tools) do
-    InfectiousSection:CreateButton({
-        Title = "No "..tool.." Cooldown",
+    InfectiousSmileSection:AddButton({
+        Text = "No "..tool.." Cooldown",
         Description = "Removes cooldown when holding "..tool,
         Callback = function()
             pcall(function()
@@ -393,5 +378,10 @@ for _, tool in ipairs(tools) do
     })
 end
 
--- Initialization
-Notify("Hydra UI Loaded", "bizim scriptler is ready!", 5)
+-- Initialize Anti-AFK by default
+antiAfkConnection = LocalPlayer.Idled:Connect(function()
+    game:GetService("VirtualUser"):ClickButton2(Vector2.new())
+end)
+antiAfkEnabled = true
+
+Notify("Script Loaded", "bizim scriptler is ready!", 5)
