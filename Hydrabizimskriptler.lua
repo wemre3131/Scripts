@@ -1,6 +1,19 @@
--- Load Pepsi's UI Library
-local Library = loadstring(game:GetObjects("rbxassetid://7657867786")[1].Source)()
-local Window = Library:CreateWindow("bizim scriptler")
+-- Load Rayfield Library
+local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Rayfield/main/source'))()
+
+-- Create Window
+local Window = Rayfield:CreateWindow({
+    Name = "bizim scriptler",
+    LoadingTitle = "bizim scriptler",
+    LoadingSubtitle = "by bizim",
+    ConfigurationSaving = {
+        Enabled = false,
+    },
+    Discord = {
+        Enabled = false,
+    },
+    KeySystem = false,
+})
 
 -- Core Services
 local Players = game:GetService("Players")
@@ -9,13 +22,15 @@ local Mouse = LocalPlayer:GetMouse()
 local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
 
 -- Notification Function
 local function Notify(title, text, duration)
-    game.StarterGui:SetCore("SendNotification", {
+    Rayfield:Notify({
         Title = title,
-        Text = text,
-        Duration = duration or 3
+        Content = text,
+        Duration = duration or 3,
+        Image = 4483362458,
     })
 end
 
@@ -137,6 +152,10 @@ local function GetHumanoid()
     return LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
 end
 
+local function GetRootPart()
+    return LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+end
+
 local function ToggleNoclip()
     local noclip = false
     local conn
@@ -166,6 +185,264 @@ local function ToggleNoclip()
     end
     
     ToggleState()
+end
+
+-- ========== COMBAT FEATURES ==========
+-- Hitbox Expander
+local hitboxSize = 5
+local hitboxEnabled = false
+local hitboxConnections = {}
+
+local function ToggleHitbox()
+    hitboxEnabled = not hitboxEnabled
+    
+    if hitboxEnabled then
+        Notify("Hitbox Expander", "Enabled")
+        
+        local function expandHitbox(character)
+            if character == LocalPlayer.Character then return end
+            
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if not humanoid then return end
+            
+            local rootPart = character:FindFirstChild("HumanoidRootPart")
+            if not rootPart then return end
+            
+            -- Create hitbox part
+            local hitbox = Instance.new("Part")
+            hitbox.Name = "HitboxExpander"
+            hitbox.Size = Vector3.new(hitboxSize, hitboxSize, hitboxSize)
+            hitbox.Transparency = 0.7
+            hitbox.Color = Color3.fromRGB(255, 0, 0)
+            hitbox.CanCollide = false
+            hitbox.Anchored = true
+            hitbox.CFrame = rootPart.CFrame
+            hitbox.Parent = workspace
+            
+            -- Weld to character
+            local weld = Instance.new("Weld")
+            weld.Part0 = rootPart
+            weld.Part1 = hitbox
+            weld.C0 = CFrame.new()
+            weld.Parent = hitbox
+            
+            -- Store for removal
+            hitboxConnections[character] = hitbox
+            
+            -- Cleanup when character dies
+            humanoid.Died:Once(function()
+                if hitbox and hitbox.Parent then
+                    hitbox:Destroy()
+                end
+                hitboxConnections[character] = nil
+            end)
+        end
+        
+        -- Apply to existing players
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character then
+                expandHitbox(player.Character)
+            end
+        end
+        
+        -- Apply to new players
+        Players.PlayerAdded:Connect(function(player)
+            player.CharacterAdded:Connect(function(character)
+                if hitboxEnabled then
+                    expandHitbox(character)
+                end
+            end)
+        end)
+    else
+        -- Remove all hitboxes
+        for _, hitbox in pairs(hitboxConnections) do
+            if hitbox and hitbox.Parent then
+                hitbox:Destroy()
+            end
+        end
+        table.clear(hitboxConnections)
+        Notify("Hitbox Expander", "Disabled")
+    end
+end
+
+-- Invisible Fling
+local flingEnabled = false
+local flingForce = 10000
+local originalTransparency = {}
+local flingParts = {}
+
+local function ToggleInvisibleFling()
+    flingEnabled = not flingEnabled
+    
+    if flingEnabled then
+        Notify("Invisible Fling", "Enabled - Click on players to fling")
+        
+        -- Save original transparency and make character invisible
+        if LocalPlayer.Character then
+            for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    originalTransparency[part] = part.Transparency
+                    part.Transparency = 1
+                    part.CanCollide = false
+                end
+            end
+        end
+        
+        -- Create fling parts
+        local rootPart = GetRootPart()
+        if rootPart then
+            local flingPart = Instance.new("Part")
+            flingPart.Size = Vector3.new(5, 5, 5)
+            flingPart.Transparency = 1
+            flingPart.CanCollide = false
+            flingPart.Anchored = false
+            flingPart.CFrame = rootPart.CFrame
+            flingPart.Parent = workspace
+            
+            local velocity = Instance.new("BodyVelocity", flingPart)
+            velocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+            velocity.Velocity = Vector3.new(0, 0, 0)
+            
+            local weld = Instance.new("Weld")
+            weld.Part0 = rootPart
+            weld.Part1 = flingPart
+            weld.C0 = CFrame.new()
+            weld.Parent = flingPart
+            
+            flingParts[#flingParts + 1] = flingPart
+        end
+        
+        -- Mouse click to fling
+        Mouse.Button1Down:Connect(function()
+            if not flingEnabled then return end
+            
+            local target = Mouse.Target
+            if target then
+                local model = target:FindFirstAncestorOfClass("Model")
+                if model then
+                    local humanoid = model:FindFirstChildOfClass("Humanoid")
+                    if humanoid and humanoid.RootPart then
+                        -- Apply fling force
+                        humanoid.RootPart.Velocity = Vector3.new(
+                            math.random(-flingForce, flingForce),
+                            math.random(flingForce/2, flingForce),
+                            math.random(-flingForce, flingForce)
+                        )
+                        Notify("Fling", "Flinging "..(model.Name or "target"))
+                    end
+                end
+            end
+        end)
+    else
+        -- Restore original transparency
+        for part, transparency in pairs(originalTransparency) do
+            if part and part.Parent then
+                part.Transparency = transparency
+            end
+        end
+        table.clear(originalTransparency)
+        
+        -- Remove fling parts
+        for _, part in ipairs(flingParts) do
+            if part and part.Parent then
+                part:Destroy()
+            end
+        end
+        table.clear(flingParts)
+        
+        Notify("Invisible Fling", "Disabled")
+    end
+end
+
+-- Spinbot
+local spinbotEnabled = false
+local spinbotSpeed = 20
+local spinbotConnection
+
+local function ToggleSpinbot()
+    spinbotEnabled = not spinbotEnabled
+    
+    if spinbotEnabled then
+        Notify("Spinbot", "Enabled")
+        local rootPart = GetRootPart()
+        if not rootPart then return end
+        
+        spinbotConnection = RunService.Heartbeat:Connect(function()
+            if spinbotEnabled and rootPart then
+                rootPart.CFrame = rootPart.CFrame * CFrame.Angles(0, math.rad(spinbotSpeed), 0)
+            end
+        end)
+    else
+        if spinbotConnection then
+            spinbotConnection:Disconnect()
+            spinbotConnection = nil
+        end
+        Notify("Spinbot", "Disabled")
+    end
+end
+
+-- Auto Clicker
+local autoClickerEnabled = false
+local clickInterval = 0.1
+local autoClickerConnection
+
+local function ToggleAutoClicker()
+    autoClickerEnabled = not autoClickerEnabled
+    
+    if autoClickerEnabled then
+        Notify("Auto Clicker", "Enabled")
+        autoClickerConnection = RunService.Heartbeat:Connect(function()
+            if autoClickerEnabled then
+                mouse1click()
+                wait(clickInterval)
+            end
+        end)
+    else
+        if autoClickerConnection then
+            autoClickerConnection:Disconnect()
+            autoClickerConnection = nil
+        end
+        Notify("Auto Clicker", "Disabled")
+    end
+end
+
+-- Kill Aura
+local killAuraEnabled = false
+local killAuraRange = 25
+local killAuraConnection
+
+local function ToggleKillAura()
+    killAuraEnabled = not killAuraEnabled
+    
+    if killAuraEnabled then
+        Notify("Kill Aura", "Enabled")
+        killAuraConnection = RunService.Heartbeat:Connect(function()
+            if not killAuraEnabled then return end
+            local rootPart = GetRootPart()
+            if not rootPart then return end
+            
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer and player.Character then
+                    local targetRoot = player.Character:FindFirstChild("HumanoidRootPart")
+                    local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+                    
+                    if targetRoot and humanoid and humanoid.Health > 0 then
+                        local distance = (rootPart.Position - targetRoot.Position).Magnitude
+                        if distance <= killAuraRange then
+                            -- Simulate damage
+                            humanoid:TakeDamage(25)
+                        end
+                    end
+                end
+            end
+        end)
+    else
+        if killAuraConnection then
+            killAuraConnection:Disconnect()
+            killAuraConnection = nil
+        end
+        Notify("Kill Aura", "Disabled")
+    end
 end
 
 -- ========== ESP SYSTEM ==========
@@ -213,7 +490,7 @@ local function ServerHop()
     
     local servers = {}
     local req = game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Desc&limit=100")
-    for _, server in ipairs(game:GetService("HttpService"):JSONDecode(req).data) do
+    for _, server in ipairs(HttpService:JSONDecode(req).data) do
         if server.playing < server.maxPlayers and server.id ~= game.JobId then
             table.insert(servers, server.id)
         end
@@ -259,8 +536,8 @@ end)
 
 -- ========== CREATE UI ==========
 -- Main Tab
-local MainTab = Window:AddTab("Main")
-local MainSection = MainTab:AddSection("Scripts")
+local MainTab = Window:CreateTab("Main", 4483362458)
+local MainSection = MainTab:CreateSection("Scripts")
 
 -- Script Buttons
 local scripts = {
@@ -280,19 +557,18 @@ local scripts = {
 }
 
 for _, script in ipairs(scripts) do
-    MainSection:AddButton({
-        Text = script[1],
-        Description = script[2],
+    MainSection:CreateButton({
+        Name = script[1],
         Callback = function()
             LoadScript(script[3], script[1])
-        end
+        end,
+        Description = script[2]
     })
 end
 
 -- Special case for Bee Swarm
-MainSection:AddButton({
-    Text = "Bee Swarm Simulator",
-    Description = "Auto Farm and Auto Find!",
+MainSection:CreateButton({
+    Name = "Bee Swarm Simulator",
     Callback = function()
         pcall(function()
             local objects = game:GetObjects("rbxassetid://4384103988")
@@ -301,45 +577,49 @@ MainSection:AddButton({
                 Notify("Script Loaded", "Bee Swarm Simulator")
             end
         end)
-    end
+    end,
+    Description = "Auto Farm and Auto Find!"
 })
 
 -- Player Tab
-local PlayerTab = Window:AddTab("Player")
-local PlayerSection = PlayerTab:AddSection("Player")
+local PlayerTab = Window:CreateTab("Player", 4483362458)
+local PlayerSection = PlayerTab:CreateSection("Movement")
 
 -- Player Controls
-PlayerSection:AddSlider({
-    Text = "Walkspeed",
-    Description = "Change your speed",
-    Min = 16,
-    Max = 500,
-    Default = 16,
+PlayerSection:CreateSlider({
+    Name = "Walkspeed",
+    Range = {16, 500},
+    Increment = 1,
+    Suffix = "studs",
+    CurrentValue = 16,
+    Flag = "WalkSpeed",
     Callback = function(s)
         local humanoid = GetHumanoid()
         if humanoid then
             humanoid.WalkSpeed = s
         end
-    end
+    end,
+    Description = "Change your speed"
 })
 
-PlayerSection:AddSlider({
-    Text = "Jumppower",
-    Description = "Change jump height",
-    Min = 50,
-    Max = 500,
-    Default = 50,
+PlayerSection:CreateSlider({
+    Name = "Jumppower",
+    Range = {50, 500},
+    Increment = 1,
+    Suffix = "power",
+    CurrentValue = 50,
+    Flag = "JumpPower",
     Callback = function(s)
         local humanoid = GetHumanoid()
         if humanoid then
             humanoid.JumpPower = s
         end
-    end
+    end,
+    Description = "Change jump height"
 })
 
-PlayerSection:AddButton({
-    Text = "TP Tool",
-    Description = "Click to teleport",
+PlayerSection:CreateButton({
+    Name = "TP Tool",
     Callback = function()
         local tool = Instance.new("Tool")
         tool.RequiresHandle = false
@@ -353,74 +633,177 @@ PlayerSection:AddButton({
         end)
         tool.Parent = LocalPlayer.Backpack
         Notify("TP Tool", "Added to backpack")
-    end
+    end,
+    Description = "Click to teleport"
 })
 
-PlayerSection:AddButton({
-    Text = "Noclip",
-    Description = "Walk through walls",
-    Callback = ToggleNoclip
+PlayerSection:CreateButton({
+    Name = "Noclip",
+    Callback = ToggleNoclip,
+    Description = "Walk through walls"
 })
 
-PlayerSection:AddButton({
-    Text = "R15 To R6 (FE)",
-    Description = "Change animation",
+PlayerSection:CreateButton({
+    Name = "R15 To R6 (FE)",
     Callback = function()
         LoadScript("https://raw.githubusercontent.com/Imagnir/r6_anims_for_r15/main/r6_anims.lua", "R15 to R6")
-    end
+    end,
+    Description = "Change animation"
 })
 
-PlayerSection:AddButton({
-    Text = "Fly (V to toggle)",
-    Description = "Toggle flight mode",
-    Callback = IYtoggleFlight
+PlayerSection:CreateButton({
+    Name = "Fly (V to toggle)",
+    Callback = IYtoggleFlight,
+    Description = "Toggle flight mode"
 })
 
-PlayerSection:AddSlider({
-    Text = "Fly Speed",
-    Description = "Adjust fly speed",
-    Min = 20,
-    Max = 300,
-    Default = 50,
+PlayerSection:CreateSlider({
+    Name = "Fly Speed",
+    Range = {20, 300},
+    Increment = 1,
+    Suffix = "speed",
+    CurrentValue = 50,
+    Flag = "FlySpeed",
     Callback = function(val)
         IYflySpeed = val
-    end
+    end,
+    Description = "Adjust fly speed"
 })
 
-PlayerSection:AddButton({
-    Text = "ESP Toggle",
-    Description = "See players through walls",
-    Callback = ToggleESP
+-- Combat Section
+local CombatSection = PlayerTab:CreateSection("Combat")
+
+CombatSection:CreateButton({
+    Name = "Hitbox Expander",
+    Callback = ToggleHitbox,
+    Description = "Make player hitboxes larger"
 })
 
-PlayerSection:AddButton({
-    Text = "Server Hop",
-    Description = "Join a new server",
-    Callback = ServerHop
+CombatSection:CreateSlider({
+    Name = "Hitbox Size",
+    Range = {2, 15},
+    Increment = 1,
+    Suffix = "studs",
+    CurrentValue = 5,
+    Flag = "HitboxSize",
+    Callback = function(val)
+        hitboxSize = val
+    end,
+    Description = "Set hitbox expansion size"
 })
 
-PlayerSection:AddButton({
-    Text = "Rejoin",
-    Description = "Rejoin current server",
-    Callback = Rejoin
+CombatSection:CreateButton({
+    Name = "Invisible Fling",
+    Callback = ToggleInvisibleFling,
+    Description = "Become invisible and fling players"
 })
 
-PlayerSection:AddButton({
-    Text = "Anti-AFK Toggle",
-    Description = "Prevent being kicked for idling",
-    Callback = ToggleAntiAFK
+CombatSection:CreateSlider({
+    Name = "Fling Force",
+    Range = {5000, 25000},
+    Increment = 100,
+    Suffix = "force",
+    CurrentValue = 10000,
+    Flag = "FlingForce",
+    Callback = function(val)
+        flingForce = val
+    end,
+    Description = "Set fling power"
+})
+
+CombatSection:CreateButton({
+    Name = "Spinbot",
+    Callback = ToggleSpinbot,
+    Description = "Spin rapidly to avoid attacks"
+})
+
+CombatSection:CreateSlider({
+    Name = "Spin Speed",
+    Range = {5, 50},
+    Increment = 1,
+    Suffix = "speed",
+    CurrentValue = 20,
+    Flag = "SpinSpeed",
+    Callback = function(val)
+        spinbotSpeed = val
+    end,
+    Description = "Set rotation speed"
+})
+
+CombatSection:CreateButton({
+    Name = "Auto Clicker",
+    Callback = ToggleAutoClicker,
+    Description = "Automatically click mouse"
+})
+
+CombatSection:CreateSlider({
+    Name = "Click Interval",
+    Range = {0.01, 1},
+    Increment = 0.01,
+    Suffix = "seconds",
+    CurrentValue = 0.1,
+    Flag = "ClickInterval",
+    Callback = function(val)
+        clickInterval = val
+    end,
+    Description = "Set click frequency"
+})
+
+CombatSection:CreateButton({
+    Name = "Kill Aura",
+    Callback = ToggleKillAura,
+    Description = "Automatically damage nearby players"
+})
+
+CombatSection:CreateSlider({
+    Name = "Kill Aura Range",
+    Range = {5, 50},
+    Increment = 1,
+    Suffix = "studs",
+    CurrentValue = 25,
+    Flag = "KillAuraRange",
+    Callback = function(val)
+        killAuraRange = val
+    end,
+    Description = "Set attack distance"
+})
+
+-- Utility Section
+local UtilitySection = PlayerTab:CreateSection("Utility")
+
+UtilitySection:CreateButton({
+    Name = "ESP Toggle",
+    Callback = ToggleESP,
+    Description = "See players through walls"
+})
+
+UtilitySection:CreateButton({
+    Name = "Server Hop",
+    Callback = ServerHop,
+    Description = "Join a new server"
+})
+
+UtilitySection:CreateButton({
+    Name = "Rejoin",
+    Callback = Rejoin,
+    Description = "Rejoin current server"
+})
+
+UtilitySection:CreateButton({
+    Name = "Anti-AFK Toggle",
+    Callback = ToggleAntiAFK,
+    Description = "Prevent being kicked for idling"
 })
 
 -- Infectious Smile Tab
-local InfectiousTab = Window:AddTab("Infectious Smile")
-local InfectiousSmileSection = InfectiousTab:AddSection("Infectious Smile")
+local InfectiousTab = Window:CreateTab("Infectious Smile", 4483362458)
+local InfectiousSmileSection = InfectiousTab:CreateSection("Infectious Smile")
 
 local tools = {"Bat", "Bottle", "Branch", "Katana", "Spear", "Chain", "Hatchet", "Knife"}
 
 for _, tool in ipairs(tools) do
-    InfectiousSmileSection:AddButton({
-        Text = "No "..tool.." Cooldown",
-        Description = "Removes cooldown when holding "..tool,
+    InfectiousSmileSection:CreateButton({
+        Name = "No "..tool.." Cooldown",
         Callback = function()
             pcall(function()
                 if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild(tool) then
@@ -431,7 +814,8 @@ for _, tool in ipairs(tools) do
                     end
                 end
             end)
-        end
+        end,
+        Description = "Removes cooldown when holding "..tool
     })
 end
 
