@@ -132,17 +132,20 @@ MainTab:CreateButton({
 local PlayerTab = Window:CreateTab("Player")
 
 -- Walkspeed & Jumppower
-PlayerTab:CreateSlider({ Name = "Walkspeed", Range = {16,500}, Increment=1, CurrentValue=16, Callback = function(s)
+PlayerTab:CreateSlider({ Name = "Walkspeed", Range = {16,500}, Increment=1, CurrentValue=16, 
+Callback = function(s)
     local h = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
     if h then h.WalkSpeed = s end
 end})
-PlayerTab:CreateSlider({ Name = "Jumppower", Range = {50,500}, Increment=1, CurrentValue=50, Callback = function(s)
+PlayerTab:CreateSlider({ Name = "Jumppower", Range = {50,500}, Increment=1, CurrentValue=50, 
+Callback = function(s)
     local h = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
     if h then h.JumpPower = s end
 end})
 
 -- TP Tool
-PlayerTab:CreateButton({ Name = "TP Tool", Callback = function()
+PlayerTab:CreateButton({ Name = "TP Tool", 
+Callback = function()
     local mouse = game.Players.LocalPlayer:GetMouse()
     local tool = Instance.new("Tool",{RequiresHandle=false,Name="Tp tool"})
     tool.Activated:Connect(function()
@@ -154,8 +157,49 @@ PlayerTab:CreateButton({ Name = "TP Tool", Callback = function()
 end})
 
 -- Noclip
-PlayerTab:CreateButton({ Name = "Noclip", Callback = function()
-    loadstring(game:HttpGet("https://pastebin.com/raw/KcZxW1Sp"))()
+PlayerTab:CreateButton({ Name = "Noclip Keybind N", 
+Callback = function()
+    local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local noclipEnabled = false
+
+-- Function to set collision for character parts
+local function setCollision(state)
+	for _, part in pairs(character:GetDescendants()) do
+		if part:IsA("BasePart") and part.CanCollide ~= state then
+			part.CanCollide = state
+		end
+	end
+end
+
+-- Toggle noclip on key press
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then return end
+	if input.KeyCode == Enum.KeyCode.N then
+		noclipEnabled = not noclipEnabled
+	end
+end)
+
+-- Apply noclip every frame if enabled
+RunService.Stepped:Connect(function()
+	if noclipEnabled and character then
+		setCollision(false)
+	end
+end)
+
+-- Reset collision on respawn
+player.CharacterAdded:Connect(function(char)
+	character = char
+	wait(1) -- Small delay to ensure parts are loaded
+	if noclipEnabled then
+		setCollision(false)
+	end
+end)
+
 end})
 
 -- R15 → R6
