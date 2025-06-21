@@ -19,11 +19,107 @@ local function Notify(title, text, duration)
     })
 end
 
--- ========== MAIN TAB ==========
-local MainTab = Window:AddTab("Main")
-local MainSection = MainTab:AddSection("Scripts")
+-- ========== INFINITE YIELD FLIGHT SYSTEM ==========
+local IYflySpeed = 50
+local IYflyKey = Enum.KeyCode.V
+local IYflyDebounce = false
+local IYflyToggled = false
+local IYflyBv, IYflyGyro, IYflyConnection
 
--- Safe Script Loader
+local function IYenableFlight()
+    if not LocalPlayer.Character then return end
+    
+    local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    local rootPart = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    
+    if not humanoid or not rootPart or IYflyToggled then return end
+    
+    IYflyToggled = true
+    IYflyBv = Instance.new("BodyVelocity", rootPart)
+    IYflyBv.Velocity = Vector3.new(0, 0.1, 0)
+    IYflyBv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+    IYflyBv.P = 9e9
+    
+    IYflyGyro = Instance.new("BodyGyro", rootPart)
+    IYflyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+    IYflyGyro.P = 9e9
+    IYflyGyro.CFrame = rootPart.CFrame
+    
+    humanoid.PlatformStand = true
+    
+    local camera = workspace.CurrentCamera
+    local last = Vector3.new()
+    
+    IYflyConnection = RunService.Heartbeat:Connect(function()
+        if not IYflyToggled or not LocalPlayer.Character then
+            return
+        end
+        
+        local direction = Vector3.new()
+        if UIS:IsKeyDown(Enum.KeyCode.W) then direction = direction + camera.CFrame.LookVector end
+        if UIS:IsKeyDown(Enum.KeyCode.S) then direction = direction - camera.CFrame.LookVector end
+        if UIS:IsKeyDown(Enum.KeyCode.A) then direction = direction - camera.CFrame.RightVector end
+        if UIS:IsKeyDown(Enum.KeyCode.D) then direction = direction + camera.CFrame.RightVector end
+        
+        if direction.Magnitude > 0 then
+            direction = direction.Unit * IYflySpeed
+            last = direction
+        else
+            direction = last * 0.9
+            if math.abs(direction.X) < 0.1 and math.abs(direction.Z) < 0.1 then
+                direction = Vector3.new(0, 0, 0)
+                last = direction
+            end
+        end
+        
+        IYflyBv.Velocity = Vector3.new(direction.X, 0, direction.Z)
+        IYflyGyro.CFrame = CFrame.new(rootPart.Position, rootPart.Position + camera.CFrame.LookVector)
+    end)
+    
+    Notify("Flight", "Enabled (V to toggle)")
+end
+
+local function IYdisableFlight()
+    if not IYflyToggled then return end
+    
+    IYflyToggled = false
+    if IYflyBv then IYflyBv:Destroy() end
+    if IYflyGyro then IYflyGyro:Destroy() end
+    if IYflyConnection then IYflyConnection:Disconnect() end
+    
+    local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if humanoid then humanoid.PlatformStand = false end
+    
+    Notify("Flight", "Disabled")
+end
+
+local function IYtoggleFlight()
+    if IYflyDebounce then return end
+    IYflyDebounce = true
+    
+    if IYflyToggled then
+        IYdisableFlight()
+    else
+        IYenableFlight()
+    end
+    
+    task.wait(0.2)
+    IYflyDebounce = false
+end
+
+-- Connect key press
+UIS.InputBegan:Connect(function(input, processed)
+    if not processed and input.KeyCode == IYflyKey then
+        IYtoggleFlight()
+    end
+end)
+
+-- Character added event to reset flight
+LocalPlayer.CharacterAdded:Connect(function()
+    IYdisableFlight()
+end)
+
+-- ========== SCRIPT LOADER ==========
 local function LoadScript(url, name)
     local success, err = pcall(function()
         local content = game:HttpGet(url, true)
@@ -35,6 +131,136 @@ local function LoadScript(url, name)
         warn("Script Error ("..name.."): "..err)
     end
 end
+
+-- ========== PLAYER UTILITIES ==========
+local function GetHumanoid()
+    return LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+end
+
+local function ToggleNoclip()
+    local noclip = false
+    local conn
+    
+    local function ToggleState()
+        noclip = not noclip
+        if LocalPlayer.Character then
+            for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = not noclip
+                end
+            end
+        end
+        Notify("Noclip", noclip and "Enabled" or "Disabled")
+    end
+    
+    if not conn then
+        conn = RunService.Stepped:Connect(function()
+            if noclip and LocalPlayer.Character then
+                for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end)
+    end
+    
+    ToggleState()
+end
+
+-- ========== ESP SYSTEM ==========
+local espEnabled = false
+local espCache = {}
+
+local function ToggleESP()
+    espEnabled = not espEnabled
+    
+    if espEnabled then
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character then
+                local highlight = Instance.new("Highlight")
+                highlight.FillTransparency = 0.8
+                highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+                highlight.Parent = player.Character
+                espCache[player] = highlight
+            end
+        end
+        
+        Players.PlayerAdded:Connect(function(player)
+            player.CharacterAdded:Connect(function(character)
+                if espEnabled then
+                    local highlight = Instance.new("Highlight")
+                    highlight.FillTransparency = 0.8
+                    highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+                    highlight.Parent = character
+                    espCache[player] = highlight
+                end
+            end)
+        end)
+        Notify("ESP", "Enabled")
+    else
+        for player, highlight in pairs(espCache) do
+            highlight:Destroy()
+        end
+        table.clear(espCache)
+        Notify("ESP", "Disabled")
+    end
+end
+
+-- ========== SERVER FUNCTIONS ==========
+local function ServerHop()
+    Notify("Server Hop", "Finding new server...")
+    
+    local servers = {}
+    local req = game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Desc&limit=100")
+    for _, server in ipairs(game:GetService("HttpService"):JSONDecode(req).data) do
+        if server.playing < server.maxPlayers and server.id ~= game.JobId then
+            table.insert(servers, server.id)
+        end
+    end
+    
+    if #servers > 0 then
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)])
+    else
+        Notify("Server Hop", "No servers found!", 5)
+    end
+end
+
+local function Rejoin()
+    Notify("Rejoin", "Rejoining server...")
+    TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId)
+end
+
+-- ========== ANTI-AFK SYSTEM ==========
+local antiAfkEnabled = true
+local antiAfkConnection
+
+local function ToggleAntiAFK()
+    antiAfkEnabled = not antiAfkEnabled
+    
+    if antiAfkEnabled then
+        antiAfkConnection = LocalPlayer.Idled:Connect(function()
+            game:GetService("VirtualUser"):ClickButton2(Vector2.new())
+        end)
+        Notify("Anti-AFK", "Enabled")
+    else
+        if antiAfkConnection then
+            antiAfkConnection:Disconnect()
+            antiAfkConnection = nil
+        end
+        Notify("Anti-AFK", "Disabled")
+    end
+end
+
+-- Initialize Anti-AFK
+antiAfkConnection = LocalPlayer.Idled:Connect(function()
+    game:GetService("VirtualUser"):ClickButton2(Vector2.new())
+end)
+
+-- ========== CREATE UI ==========
+-- Main Tab
+local MainTab = Window:AddTab("Main")
+local MainSection = MainTab:AddSection("Scripts")
 
 -- Script Buttons
 local scripts = {
@@ -78,69 +304,9 @@ MainSection:AddButton({
     end
 })
 
--- ========== PLAYER TAB ==========
+-- Player Tab
 local PlayerTab = Window:AddTab("Player")
 local PlayerSection = PlayerTab:AddSection("Player")
-
--- Movement Controls
-local flySpeed = 50
-local flying = false
-local bv, bg, flyConn
-local flyingDir = {w=false, a=false, s=false, d=false}
-local originalWalkspeed = 16
-local originalJumppower = 50
-
--- Get Humanoid safely
-local function GetHumanoid()
-    return LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-end
-
--- Fly System
-local function ToggleFly()
-    flying = not flying
-    local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-    
-    if flying then
-        bv = Instance.new("BodyVelocity", hrp)
-        bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-        bg = Instance.new("BodyGyro", hrp)
-        bg.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-        
-        flyConn = RunService.Heartbeat:Connect(function()
-            local camCF = workspace.CurrentCamera.CFrame
-            local moveVec = Vector3.new()
-            if flyingDir.w then moveVec += camCF.LookVector end
-            if flyingDir.s then moveVec -= camCF.LookVector end
-            if flyingDir.a then moveVec -= camCF.RightVector end
-            if flyingDir.d then moveVec += camCF.RightVector end
-            
-            bv.Velocity = moveVec.Unit * flySpeed
-            bg.CFrame = camCF
-        end)
-    else
-        if flyConn then flyConn:Disconnect() end
-        if bv then bv:Destroy() end
-        if bg then bg:Destroy() end
-    end
-    Notify("Fly", flying and "Enabled" or "Disabled")
-end
-
--- Input Handling for Fly
-UIS.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if input.KeyCode == Enum.KeyCode.W then flyingDir.w = true end
-    if input.KeyCode == Enum.KeyCode.A then flyingDir.a = true end
-    if input.KeyCode == Enum.KeyCode.S then flyingDir.s = true end
-    if input.KeyCode == Enum.KeyCode.D then flyingDir.d = true end
-end)
-
-UIS.InputEnded:Connect(function(input)
-    if input.KeyCode == Enum.KeyCode.W then flyingDir.w = false end
-    if input.KeyCode == Enum.KeyCode.A then flyingDir.a = false end
-    if input.KeyCode == Enum.KeyCode.S then flyingDir.s = false end
-    if input.KeyCode == Enum.KeyCode.D then flyingDir.d = false end
-end)
 
 -- Player Controls
 PlayerSection:AddSlider({
@@ -152,7 +318,6 @@ PlayerSection:AddSlider({
     Callback = function(s)
         local humanoid = GetHumanoid()
         if humanoid then
-            originalWalkspeed = s
             humanoid.WalkSpeed = s
         end
     end
@@ -167,7 +332,6 @@ PlayerSection:AddSlider({
     Callback = function(s)
         local humanoid = GetHumanoid()
         if humanoid then
-            originalJumppower = s
             humanoid.JumpPower = s
         end
     end
@@ -195,36 +359,7 @@ PlayerSection:AddButton({
 PlayerSection:AddButton({
     Text = "Noclip",
     Description = "Walk through walls",
-    Callback = function()
-        local noclip = false
-        local conn
-        
-        local function ToggleNoclip()
-            noclip = not noclip
-            if LocalPlayer.Character then
-                for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = not noclip
-                    end
-                end
-            end
-            Notify("Noclip", noclip and "Enabled" or "Disabled")
-        end
-        
-        if not conn then
-            conn = RunService.Stepped:Connect(function()
-                if noclip and LocalPlayer.Character then
-                    for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-                        if part:IsA("BasePart") then
-                            part.CanCollide = false
-                        end
-                    end
-                end
-            end)
-        end
-        
-        ToggleNoclip()
-    end
+    Callback = ToggleNoclip
 })
 
 PlayerSection:AddButton({
@@ -238,123 +373,45 @@ PlayerSection:AddButton({
 PlayerSection:AddButton({
     Text = "Fly (V to toggle)",
     Description = "Toggle flight mode",
-    Callback = function()
-        ToggleFly()
-    end
+    Callback = IYtoggleFlight
 })
 
 PlayerSection:AddSlider({
     Text = "Fly Speed",
     Description = "Adjust fly speed",
-    Min = 50,
+    Min = 20,
     Max = 300,
     Default = 50,
     Callback = function(val)
-        flySpeed = val
+        IYflySpeed = val
     end
 })
-
--- ====== ESP SYSTEM ======
-local espEnabled = false
-local espCache = {}
 
 PlayerSection:AddButton({
     Text = "ESP Toggle",
     Description = "See players through walls",
-    Callback = function()
-        espEnabled = not espEnabled
-        
-        if espEnabled then
-            for _, player in ipairs(Players:GetPlayers()) do
-                if player ~= LocalPlayer and player.Character then
-                    local highlight = Instance.new("Highlight")
-                    highlight.FillTransparency = 0.8
-                    highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
-                    highlight.Parent = player.Character
-                    espCache[player] = highlight
-                end
-            end
-            
-            Players.PlayerAdded:Connect(function(player)
-                player.CharacterAdded:Connect(function(character)
-                    if espEnabled then
-                        local highlight = Instance.new("Highlight")
-                        highlight.FillTransparency = 0.8
-                        highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
-                        highlight.Parent = character
-                        espCache[player] = highlight
-                    end
-                end)
-            end)
-            Notify("ESP", "Enabled")
-        else
-            for player, highlight in pairs(espCache) do
-                highlight:Destroy()
-            end
-            table.clear(espCache)
-            Notify("ESP", "Disabled")
-        end
-    end
+    Callback = ToggleESP
 })
 
--- ====== SERVER FUNCTIONS ======
 PlayerSection:AddButton({
     Text = "Server Hop",
     Description = "Join a new server",
-    Callback = function()
-        Notify("Server Hop", "Finding new server...")
-        
-        local servers = {}
-        local req = game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Desc&limit=100")
-        for _, server in ipairs(game:GetService("HttpService"):JSONDecode(req).data) do
-            if server.playing < server.maxPlayers and server.id ~= game.JobId then
-                table.insert(servers, server.id)
-            end
-        end
-        
-        if #servers > 0 then
-            TeleportService:TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)])
-        else
-            Notify("Server Hop", "No servers found!", 5)
-        end
-    end
+    Callback = ServerHop
 })
 
 PlayerSection:AddButton({
     Text = "Rejoin",
     Description = "Rejoin current server",
-    Callback = function()
-        Notify("Rejoin", "Rejoining server...")
-        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId)
-    end
+    Callback = Rejoin
 })
-
--- ====== ANTI-AFK SYSTEM ======
-local antiAfkEnabled = false
-local antiAfkConnection
 
 PlayerSection:AddButton({
     Text = "Anti-AFK Toggle",
     Description = "Prevent being kicked for idling",
-    Callback = function()
-        antiAfkEnabled = not antiAfkEnabled
-        
-        if antiAfkEnabled then
-            antiAfkConnection = LocalPlayer.Idled:Connect(function()
-                game:GetService("VirtualUser"):ClickButton2(Vector2.new())
-            end)
-            Notify("Anti-AFK", "Enabled")
-        else
-            if antiAfkConnection then
-                antiAfkConnection:Disconnect()
-                antiAfkConnection = nil
-            end
-            Notify("Anti-AFK", "Disabled")
-        end
-    end
+    Callback = ToggleAntiAFK
 })
 
--- ========== INFECTIOUS SMILE TAB ==========
+-- Infectious Smile Tab
 local InfectiousTab = Window:AddTab("Infectious Smile")
 local InfectiousSmileSection = InfectiousTab:AddSection("Infectious Smile")
 
@@ -377,11 +434,5 @@ for _, tool in ipairs(tools) do
         end
     })
 end
-
--- Initialize Anti-AFK by default
-antiAfkConnection = LocalPlayer.Idled:Connect(function()
-    game:GetService("VirtualUser"):ClickButton2(Vector2.new())
-end)
-antiAfkEnabled = true
 
 Notify("Script Loaded", "bizim scriptler is ready!", 5)
