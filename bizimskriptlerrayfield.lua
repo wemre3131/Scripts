@@ -156,6 +156,18 @@ Callback = function()
     tool.Parent = game.Players.LocalPlayer.Backpack
 end})
 
+PlayerTab:CreateButton({ Name = "Instant React", 
+Callback = function()
+local ProximityPromptService = game:GetService("ProximityPromptService")
+local instantInteractEnabled = true
+
+ProximityPromptService.PromptButtonHoldBegan:Connect(function(prompt, player)
+    if instantInteractEnabled then
+        fireproximityprompt(prompt)
+    end
+end)
+end})
+
 -- Noclip
 PlayerTab:CreateButton({ Name = "Noclip Keybind N", 
 Callback = function()
@@ -203,7 +215,8 @@ end)
 end})
 
 -- R15 → R6
-PlayerTab:CreateButton({ Name = "R15 To R6 (FE)", Callback = function()
+PlayerTab:CreateButton({ Name = "R15 To R6 (FE)", 
+Callback = function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Imagnir/r6_anims_for_r15/main/r6_anims.lua"))()
 end})
 
@@ -323,7 +336,8 @@ end)
 end})
 
 -- Anti-AFK
-PlayerTab:CreateButton({ Name = "Anti-AFK Toggle", Callback = function()
+PlayerTab:CreateButton({ Name = "Anti-AFK Toggle", 
+Callback = function()
     local pl = game:GetService("Players").LocalPlayer
     pl.Idled:Connect(function()
         game:GetService("VirtualUser"):ClickButton2(Vector2.new())
@@ -349,6 +363,7 @@ end
 
 local ForsakenTab = Window:CreateTab("Forsaken")
 
-ForsakenTab:CreateButton({Name = "Forsaken Infinite Stamina Script", Callback = function()
+ForsakenTab:CreateButton({Name = "Forsaken Infinite Stamina Script", 
+Callback = function()
     require(game.ReplicatedStorage.Systems.Character.Game.Sprinting).StaminaLossDisabled = true
 end})
