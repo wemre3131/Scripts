@@ -1,0 +1,167 @@
+-- Rayfield Initialization
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- Create Window
+local Window = Rayfield:CreateWindow({
+    Name = "Animation Changer",
+    Icon = "animation", -- Lucide icon name
+    LoadingTitle = "Animation System",
+    LoadingSubtitle = "by Nyser",
+    Theme = "Default",
+    ToggleUIKeybind = "K",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "NyserAnimations",
+        FileName = "AnimConfig"
+    },
+    Discord = {
+        Enabled = false,
+        Invite = "noinvitelink",
+        RememberJoins = true
+    },
+    KeySystem = false
+})
+
+-- Animation Functions
+local function setAnimation(animationSet)
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local animate = character:WaitForChild("Animate")
+    
+    for track, id in pairs(animationSet) do
+        if animate:FindFirstChild(track) then
+            animate[track].Animation1.AnimationId = id[1]
+            if track == "idle" and #id > 1 then
+                animate[track].Animation2.AnimationId = id[2]
+            end
+        end
+    end
+    character.Humanoid.Jump = true
+end
+
+-- Animation Sets
+local AnimationSets = {
+    Astronaut = {
+        idle = {"rbxassetid://891621366", "rbxassetid://891633237"},
+        walk = {"rbxassetid://891667138"},
+        run = {"rbxassetid://891636393"},
+        jump = {"rbxassetid://891627522"},
+        climb = {"rbxassetid://891609353"},
+        fall = {"rbxassetid://891617961"}
+    },
+    Bubbly = {
+        idle = {"rbxassetid://910004836", "rbxassetid://910009958"},
+        walk = {"rbxassetid://910034870"},
+        run = {"rbxassetid://910025107"},
+        jump = {"rbxassetid://910016857"},
+        fall = {"rbxassetid://910001910"}
+    },
+    Cartoony = {
+        idle = {"rbxassetid://742637544", "rbxassetid://742638445"},
+        walk = {"rbxassetid://742640026"},
+        run = {"rbxassetid://742638842"},
+        jump = {"rbxassetid://742637942"},
+        climb = {"rbxassetid://742636889"},
+        fall = {"rbxassetid://742637151"}
+    },
+    -- Add other animation sets as needed
+    None = {
+        idle = {"rbxassetid://0", "rbxassetid://0"},
+        walk = {"rbxassetid://0"},
+        run = {"rbxassetid://0"},
+        jump = {"rbxassetid://0"},
+        fall = {"rbxassetid://0"}
+    }
+}
+
+-- Create Tabs
+local NormalTab = Window:CreateTab("Normal Animations")
+local SpecialTab = Window:CreateTab("Special Animations")
+local OtherTab = Window:CreateTab("Other Settings")
+
+-- Normal Animations Section
+NormalTab:CreateSection("Standard Animations")
+for _, animName in ipairs({
+    "Astronaut", "Bubbly", "Cartoony", "Elder", "Knight", 
+    "Levitation", "Mage", "Ninja", "Pirate", "Robot", 
+    "Stylish", "SuperHero", "Toy", "Vampire", "Werewolf", "Zombie"
+}) do
+    NormalTab:CreateButton({
+        Name = animName,
+        Callback = function()
+            setAnimation(AnimationSets[animName])
+            Rayfield:Notify({
+                Title = "Animation Changed",
+                Content = "Applied " .. animName .. " animations",
+                Duration = 3
+            })
+        end
+    })
+end
+
+-- Special Animations Section
+SpecialTab:CreateSection("Special Animations")
+for _, animName in ipairs({
+    "Patrol", "Confident", "Popstar", "Cowboy", 
+    "Ghost", "Sneaky", "Princess"
+}) do
+    SpecialTab:CreateButton({
+        Name = animName,
+        Callback = function()
+            setAnimation(AnimationSets[animName])
+            Rayfield:Notify({
+                Title = "Special Animation",
+                Content = "Applied " .. animName,
+                Duration = 3
+            })
+        end
+    })
+end
+
+-- Other Settings
+OtherTab:CreateSection("Configuration")
+OtherTab:CreateButton({
+    Name = "Reset to Default",
+    Callback = function()
+        setAnimation(AnimationSets.None)
+    end
+})
+
+OtherTab:CreateButton({
+    Name = "Apply Anthro (Default)",
+    Callback = function()
+        setAnimation({
+            idle = {"rbxassetid://2510196951", "rbxassetid://2510197257"},
+            walk = {"rbxassetid://2510202577"},
+            run = {"rbxassetid://2510198475"},
+            jump = {"rbxassetid://2510197830"},
+            climb = {"rbxassetid://2510192778"},
+            fall = {"rbxassetid://2510195892"}
+        })
+    end
+})
+
+-- Initialize default animation
+game.Players.LocalPlayer.CharacterAdded:Connect(function(character)
+    character:WaitForChild("Animate")
+    setAnimation({
+        idle = {"rbxassetid://2510196951", "rbxassetid://2510197257"},
+        walk = {"rbxassetid://2510202577"},
+        run = {"rbxassetid://2510198475"},
+        jump = {"rbxassetid://2510197830"},
+        climb = {"rbxassetid://2510192778"},
+        fall = {"rbxassetid://2510195892"}
+    })
+end)
+
+-- Mobile users note
+if not game:GetService("UserInputService").KeyboardEnabled then
+    Rayfield:Notify({
+        Title = "Mobile Support",
+        Content = "Press 'ShowText' button to access Rayfield",
+        Duration = 5
+    })
+end
+
+-- Initialize Rayfield
+Rayfield:Init()
