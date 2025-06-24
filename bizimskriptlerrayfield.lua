@@ -50,83 +50,83 @@ local function createMainButton(name, url)
     })
 end
 
-  MainTab:CreateButton({Name = "Infinite Yield", 
+MainTab:CreateButton({Name = "Infinite Yield", 
   Callback = function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
 end})
 
-  MainTab:CreateButton({Name = "MM2 Script", 
+MainTab:CreateButton({Name = "Azure Script", 
   Callback = function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Joystickplays/psychic-octo-invention/main/source/yarhm/1.18/yarhm.lua"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Actyrn/Scripts/main/AzureModded"))()
 end})
 
-  MainTab:CreateButton({Name = "Arsenal Script", 
+MainTab:CreateButton({Name = "FE Emote", 
   Callback = function()
-    loadstring(game:HttpGet("https://pastebin.com/raw/G6Ubkkuv"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Gi7331/scripts/main/Emote.lua"))()
 end})
 
-  
-MainTab:CreateButton({Name = "Fling ALL Script", 
-Callback = function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/wemre3131/Scripts/refs/heads/main/Fling"))()
-end})
-
-  MainTab:CreateButton({Name = "Air Hub Script", 
+MainTab:CreateButton({Name = "Air Hub Script", 
   Callback = function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Exunys/AirHub/main/AirHub.lua"))()
 end})
 
-  MainTab:CreateButton({Name = "Jerk off R6 Script", 
+local GameScriptsTab = Window:CreateTab("Game-Scripts")
+
+GameScriptsTab:CreateButton({Name = "MM2 Script", 
   Callback = function()
-    loadstring(game:HttpGet("https://pastefy.app/wa3v2Vgm/raw"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Joystickplays/psychic-octo-invention/main/source/yarhm/1.18/yarhm.lua"))()
 end})
 
-  MainTab:CreateButton({Name = "Jerk off R15 Script", 
+GameScriptsTab:CreateButton({Name = "Arsenal Script", 
   Callback = function()
-    loadstring(game:HttpGet("https://pastefy.app/YZoglOyJ/raw"))()
+    loadstring(game:HttpGet("https://pastebin.com/raw/G6Ubkkuv"))()
 end})
 
-  
-MainTab:CreateButton({Name = "Azure Script", 
-Callback = function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Actyrn/Scripts/main/AzureModded"))()
-end})
-
-  MainTab:CreateButton({Name = "Blox Fruit Script", 
-  Callback = function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/realredz/BloxFruits/refs/heads/main/Source.lua"))()
-end})
-
-  
-MainTab:CreateButton({Name = "Grow a Garden Script", 
-Callback = function()
-    loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/NoLag-id/No-Lag-HUB/refs/heads/main/Loader/LoaderV1.lua"))()
-end})
-
-  MainTab:CreateButton({Name = "Forsaken Script", 
-  Callback = function()
-    loadstring(game:HttpGet("https://rifton.top/loader.lua"))()
-end})
-
-  MainTab:CreateButton({Name = "Bedwars Script", 
+GameScriptsTab:CreateButton({Name = "Bedwars Script", 
   Callback = function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/NewMainScript.lua", true))()
 end})
 
-MainTab:CreateButton({
-    Name = "Bee Swarm Simulator",
-    Callback = function()
-        local obj = game:GetObjects("rbxassetid://4384103988")[1]
-        if obj then obj.Parent = game.Players.LocalPlayer.PlayerGui end
-    end
-})
+GameScriptsTab:CreateButton({Name = "Blox Fruit Script", 
+  Callback = function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/realredz/BloxFruits/refs/heads/main/Source.lua"))()
+end})
 
-MainTab:CreateButton({
-    Name = "FE Emote",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Gi7331/scripts/main/Emote.lua"))()
+GameScriptsTab:CreateButton({Name = "Grow a Garden Script", 
+  Callback = function()
+    loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/NoLag-id/No-Lag-HUB/refs/heads/main/Loader/LoaderV1.lua"))()
+end})
+
+GameScriptsTab:CreateButton({Name = "Bee Swarm Simulator", 
+  Callback = function()
+    local obj = game:GetObjects("rbxassetid://4384103988")[1]
+    if obj then
+        obj.Parent = game.Players.LocalPlayer.PlayerGui
     end
-})
+end})
+
+GameScriptsTab:CreateButton({Name = "Forsaken Script", 
+  Callback = function()
+    loadstring(game:HttpGet("https://rifton.top/loader.lua"))()
+end})
+
+local FunScriptsTab = Window:CreateTab("Fun-Scripts")
+
+FunScriptsTab:CreateButton({Name = "Jerk off R6 Script", 
+  Callback = function()
+    loadstring(game:HttpGet("https://pastefy.app/wa3v2Vgm/raw"))()
+end})
+
+FunScriptsTab:CreateButton({Name = "Jerk off R15 Script", 
+  Callback = function()
+    loadstring(game:HttpGet("https://pastefy.app/YZoglOyJ/raw"))()
+end})
+
+FunScriptsTab:CreateButton({Name = "Fling ALL Script", 
+  Callback = function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/wemre3131/Scripts/refs/heads/main/Fling"))()
+end})
+
 
 -- ==== PLAYER TAB ====
 local PlayerTab = Window:CreateTab("Player")
